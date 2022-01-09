@@ -1,16 +1,28 @@
 use std::borrow::Cow;
 use std::fs;
 use std::time::Duration;
-use eframe::egui::{Button, CentralPanel, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Label, Layout, ScrollArea, Separator, TextStyle, TopBottomPanel, Ui, Vec2};
+use eframe::egui::{Button, CentralPanel, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Label, Layout, ScrollArea, Separator, TextStyle, TopBottomPanel, Ui, Vec2, Visuals};
 use eframe::epi::{App, Frame, Storage};
 use eframe::{egui, NativeOptions, run_native};
 use eframe::egui::FontFamily::Proportional;
 use eframe::egui::TextStyle::{Body, Heading};
+use crate::config::Configuration;
 
-pub struct CustomLang;
+// DO not change unless absolutely necessary
+const CONFIG_NAME: &str = "wt_custom_lang";
+
+pub struct CustomLang {
+	pub config: Configuration,
+}
 
 impl App for CustomLang {
 	fn update(&mut self, ctx: &CtxRef, frame: &Frame) {
+		if self.config.dark_mode {
+			ctx.set_visuals(Visuals::dark());
+		} else {
+			ctx.set_visuals(Visuals::light());
+		}
+
 		self.render_header_bar(ctx);
 		CentralPanel::default().show(ctx, |ui| {
 			render_header(ui);
@@ -69,17 +81,30 @@ impl App for CustomLang {
 }
 
 impl CustomLang {
-	fn render_header_bar(&self, ctx: &CtxRef) {
+	pub(crate) fn new() -> Self {
+		let config: Configuration = confy::load(CONFIG_NAME).unwrap_or_default();
+		Self {
+			config,
+		}
+	}
+	fn render_header_bar(&mut self, ctx: &CtxRef) {
 		TopBottomPanel::top("top_panel").show(ctx, |ui| {
 			ui.add_space(10.);
 			egui::menu::bar(ui, |ui| {
 				ui.with_layout(Layout::left_to_right(), |ui| {
-					ui.add(Label::new("📓").text_style(TextStyle::Heading));
+					ui.add(Hyperlink::new("https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/how_to_use.md").text("📓 How to use"));
 				});
 				ui.with_layout(Layout::right_to_left(), |ui| {
 					let close_btn = ui.add(Button::new("❌").text_style(TextStyle::Body));
+
 					let refresh_btn = ui.add(Button::new("🔄").text_style(TextStyle::Body));
-					let theme_btn = ui.add(Button::new("🌙").text_style(TextStyle::Body));
+
+					let theme_btn = ui.add(Button::new(if self.config.dark_mode { "☀" } else { "🌙" }).text_style(TextStyle::Body));
+
+					if theme_btn.clicked() {
+						confy::store(CONFIG_NAME, &self.config).unwrap();
+						self.config.dark_mode = !self.config.dark_mode;
+					}
 				});
 			});
 			ui.add_space(10.);
@@ -88,16 +113,12 @@ impl CustomLang {
 }
 
 fn render_header(ui: &mut Ui) {
-	ui.vertical_centered(|ui| {
-		ui.heading("Custom lang");
-	});
-	ui.add_space(5.0);
-	ui.add(Separator::default().spacing(5.0));
+
 }
 
 fn render_footer(ctx: &CtxRef) {
 	TopBottomPanel::bottom("footer").show(ctx, |ui| {
-		ui.vertical_centered(|ui|{
+		ui.vertical_centered(|ui| {
 			ui.add_space(10.0);
 			ui.add(Hyperlink::new("https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new").text("Report bug"));
 			ui.add_space(10.0)
