@@ -1,13 +1,15 @@
 use std::borrow::Cow;
 use std::fs;
+use std::process::exit;
 use std::time::Duration;
-use eframe::egui::{Button, CentralPanel, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Label, Layout, ScrollArea, Separator, TextStyle, TopBottomPanel, Ui, Vec2, Visuals, Window};
+use eframe::egui::*;
+use eframe::egui::Button;
 use eframe::epi::{App, Frame, Storage};
 use eframe::{egui, NativeOptions, run_native};
 use eframe::egui::FontFamily::Proportional;
+use eframe::egui::Key::B;
 use eframe::egui::TextStyle::{Body, Heading};
 use rfd::FileDialog;
-use tracing_subscriber::fmt::format;
 use crate::config::Configuration;
 use crate::REPO_URL;
 
@@ -27,6 +29,9 @@ impl App for CustomLang {
 
 		if self.config.wt_path.is_none() {
 			self.prompt_for_wt_path(ctx);
+
+		} else if !self.config.blk_set {
+			self.prompt_for_config_blk(ctx);
 		} else {
 			self.render_header_bar(ctx, frame);
 			CentralPanel::default().show(ctx, |ui| {
@@ -89,7 +94,7 @@ impl App for CustomLang {
 }
 
 impl CustomLang {
-	pub(crate) fn new() -> Self {
+	pub fn new() -> Self {
 		let config: Configuration = confy::load(CONFIG_NAME).unwrap_or_default();
 		Self {
 			config,
@@ -105,9 +110,7 @@ impl CustomLang {
 				ui.with_layout(Layout::right_to_left(), |ui| {
 					// let close_btn = ui.add(Button::new("❌").text_style(TextStyle::Body));
 
-					let refresh_btn = ui.add(Button::new("🔄 rest configuration").text_style(TextStyle::Body));
-
-					if refresh_btn.clicked() {
+					if ui.add(Button::new("🔄 rest configuration").text_style(TextStyle::Body)).clicked() {
 						confy::store(CONFIG_NAME, Configuration::default()).unwrap();
 						frame.quit();
 					}
@@ -124,24 +127,51 @@ impl CustomLang {
 		});
 	}
 	fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
-		Window::new("Select WarThunder location").show(ctx, |ui| {
+		Window::new("First time setup").show(ctx, |ui| {
+			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new("Choose path").text_style(TextStyle::Body));
 			ui.add(Hyperlink::new(format!("{}/guide/install_folder.md", REPO_URL)).text("Where the game might be installed"));
 
-
 			if select_button.clicked() {
 				if let Some(path) = FileDialog::new().pick_folder() {
-					if fs::read(&format!("{}/launcher.exe", path.to_str().unwrap())).is_ok() {
+					if fs::read(&format!("{}/config.blk", path.to_str().unwrap())).is_ok() {
 						self.config.wt_path = Some(path.to_str().unwrap().to_owned());
 						confy::store(CONFIG_NAME, &self.config).unwrap();
+						ui.add(Label::new(format!("Path {} successfully selected", path.to_str().unwrap())));
 					} else {
-						println!("{}", "Bad path");
+						ui.add(Label::new(format!("Path {} is invalid", path.to_str().unwrap())));
 					}
 				}
 			}
 		});
 	}
+	fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
+		Window::new("Configuring the config.blk file").show(ctx, |ui| {
+
+			let blk_path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
+			let config_blk = fs::read_to_string(&blk_path).unwrap();
+
+			if !config_blk.contains("testLocalization:b=yes") {
+				if ui.add(Button::new("Configure config.blk")).clicked() {
+					// Using this non-conforming strategy of editing the file, as it uses a undefined file format
+					let debug_loc = config_blk.split_at(config_blk.find("debug{").unwrap() + 7);
+					let new = format!("{}\n{}{}", debug_loc.0, "  testLocalization:b=yes", debug_loc.1);
+
+					 if fs::write(&blk_path, new).is_ok() {
+						self.config.blk_set = true;
+						confy::store(CONFIG_NAME, &self.config);
+					}
+				}
+				if ui.add(Button::new("I already configured config.blk")).clicked() {
+					self.config.blk_set = true;
+					confy::store(CONFIG_NAME, &self.config);
+				}
+			}
+		});
+	}
 }
+
+fn refresh_button() {}
 
 fn render_header(ui: &mut Ui) {}
 
