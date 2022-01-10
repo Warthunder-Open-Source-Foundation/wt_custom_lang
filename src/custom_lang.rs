@@ -159,13 +159,16 @@ impl CustomLang {
 
 					 if fs::write(&blk_path, new).is_ok() {
 						self.config.blk_set = true;
-						confy::store(CONFIG_NAME, &self.config);
+						confy::store(CONFIG_NAME, &self.config).unwrap();
 					}
 				}
 				if ui.add(Button::new("I already configured config.blk")).clicked() {
 					self.config.blk_set = true;
-					confy::store(CONFIG_NAME, &self.config);
+					confy::store(CONFIG_NAME, &self.config).unwrap();
 				}
+			} else {
+				self.config.blk_set = true;
+				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 		});
 	}
