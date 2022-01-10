@@ -22,11 +22,7 @@ impl Default for Configuration {
 
 impl Configuration {
 	pub fn is_set_up(&self) -> bool {
-		return if self.wt_path.is_some() && self.blk_set == true {
-			true
-		} else {
-			false
-		};
+		return self.is_wt_path_valid() && self.is_blk_setup() && self.is_lang_folder_created();
 	}
 	pub fn is_wt_path_valid(&self) -> bool {
 		if let Some(path) = &self.wt_path {
@@ -43,6 +39,12 @@ impl Configuration {
 					return true;
 				}
 			}
+		}
+		false
+	}
+	pub fn is_lang_folder_created(&self) -> bool {
+		if let Some(path) = &self.wt_path {
+			return fs::read_dir(format!("{}/lang", path)).is_ok();
 		}
 		false
 	}

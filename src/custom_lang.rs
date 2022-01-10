@@ -35,6 +35,8 @@ impl App for CustomLang {
 			self.prompt_for_wt_path(ctx);
 		} else if !self.config.blk_set {
 			self.prompt_for_config_blk(ctx);
+		} else if !self.config.lang_folder_created {
+			self.prompt_for_lang_folder(ctx);
 		} else if self.status_menu {
 			self.prompt_for_status(ctx);
 		} else {
@@ -126,7 +128,6 @@ impl CustomLang {
 						confy::store(CONFIG_NAME, &self.config).unwrap();
 						self.config.dark_mode = !self.config.dark_mode;
 					}
-
 				});
 			});
 			ui.add_space(10.);
@@ -139,6 +140,9 @@ impl CustomLang {
 			}
 			if self.config.is_blk_setup() {
 				ui.add(Label::new(RichText::new(format!("Config.blk is configured properly ✅")).color(Color32::from_rgb(0, 255, 0))));
+			}
+			if self.config.is_lang_folder_created() {
+				ui.add(Label::new(RichText::new(format!("Lang folder was created ✅")).color(Color32::from_rgb(0, 255, 0))));
 			}
 			if ui.add(Button::new("Close")).clicked() {
 				self.status_menu = false;
@@ -187,6 +191,17 @@ impl CustomLang {
 			} else {
 				self.config.blk_set = true;
 				confy::store(CONFIG_NAME, &self.config).unwrap();
+			}
+		});
+	}
+	fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
+		Window::new("Generating the lang folder").show(ctx, |ui|{
+			ui.label(RichText::new("Launch the game and close it again"));
+			if ui.add(Button::new("Check if it worked")).clicked() {
+				if fs::read_dir(format!("{}/lang", self.config.wt_path.as_ref().unwrap())).is_ok() {
+					self.config.lang_folder_created = true;
+					confy::store(CONFIG_NAME, &self.config);
+				}
 			}
 		});
 	}
