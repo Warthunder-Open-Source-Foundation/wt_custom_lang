@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::fs;
 use std::process::exit;
+use std::thread::sleep;
 use std::time::Duration;
 use eframe::egui::*;
 use eframe::egui::Button;
@@ -8,8 +9,10 @@ use eframe::epi::{App, Frame, Storage};
 use eframe::{egui, NativeOptions, run_native};
 use eframe::egui::FontFamily::Proportional;
 use eframe::egui::Key::B;
-use eframe::egui::TextStyle::{Body, Heading};
+use eframe::egui::TextStyle::{Body, Button as ButtonStyle, Heading};
+use eframe::egui::Label;
 use rfd::FileDialog;
+
 use crate::config::Configuration;
 use crate::REPO_URL;
 
@@ -17,6 +20,7 @@ const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely ne
 
 pub struct CustomLang {
 	pub config: Configuration,
+	pub status_menu: bool,
 }
 
 impl App for CustomLang {
@@ -29,16 +33,14 @@ impl App for CustomLang {
 
 		if self.config.wt_path.is_none() {
 			self.prompt_for_wt_path(ctx);
-
 		} else if !self.config.blk_set {
 			self.prompt_for_config_blk(ctx);
+		} else if self.status_menu {
+			self.prompt_for_status(ctx);
 		} else {
 			self.render_header_bar(ctx, frame);
 			CentralPanel::default().show(ctx, |ui| {
-				render_header(ui);
-				ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
-					ui.label(r#"WIP"#);
-				});
+				ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {});
 				render_footer(ctx);
 			});
 		}
@@ -98,6 +100,7 @@ impl CustomLang {
 		let config: Configuration = confy::load(CONFIG_NAME).unwrap_or_default();
 		Self {
 			config,
+			status_menu: false,
 		}
 	}
 	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
@@ -110,20 +113,36 @@ impl CustomLang {
 				ui.with_layout(Layout::right_to_left(), |ui| {
 					// let close_btn = ui.add(Button::new("❌").text_style(TextStyle::Body));
 
-					if ui.add(Button::new("🔄 rest configuration").text_style(TextStyle::Body)).clicked() {
+					if ui.add(Button::new("🔄 Reset configuration").text_style(TextStyle::Body)).clicked() {
 						confy::store(CONFIG_NAME, Configuration::default()).unwrap();
 						frame.quit();
 					}
 
-					let theme_btn = ui.add(Button::new(if self.config.dark_mode { "☀" } else { "🌙" }).text_style(TextStyle::Body));
+					if ui.add(Button::new(RichText::new("Status").text_style(TextStyle::Body))).clicked() {
+						self.status_menu = !self.status_menu;
+					}
 
-					if theme_btn.clicked() {
+					if ui.add(Button::new(if self.config.dark_mode { "☀" } else { "🌙" }).text_style(TextStyle::Body)).clicked() {
 						confy::store(CONFIG_NAME, &self.config).unwrap();
 						self.config.dark_mode = !self.config.dark_mode;
 					}
+
 				});
 			});
 			ui.add_space(10.);
+		});
+	}
+	fn prompt_for_status(&mut self, ctx: &CtxRef) {
+		Window::new("Config status").show(ctx, |ui| {
+			if self.config.is_wt_path_valid() {
+				ui.add(Label::new(RichText::new(format!("WT path is defined and working ✅")).color(Color32::from_rgb(0, 255, 0))));
+			}
+			if self.config.is_blk_setup() {
+				ui.add(Label::new(RichText::new(format!("Config.blk is configured properly ✅")).color(Color32::from_rgb(0, 255, 0))));
+			}
+			if ui.add(Button::new("Close")).clicked() {
+				self.status_menu = false;
+			}
 		});
 	}
 	fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
@@ -147,7 +166,6 @@ impl CustomLang {
 	}
 	fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
 		Window::new("Configuring the config.blk file").show(ctx, |ui| {
-
 			let blk_path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
 			let config_blk = fs::read_to_string(&blk_path).unwrap();
 
@@ -157,7 +175,7 @@ impl CustomLang {
 					let debug_loc = config_blk.split_at(config_blk.find("debug{").unwrap() + 7);
 					let new = format!("{}\n{}{}", debug_loc.0, "  testLocalization:b=yes", debug_loc.1);
 
-					 if fs::write(&blk_path, new).is_ok() {
+					if fs::write(&blk_path, new).is_ok() {
 						self.config.blk_set = true;
 						confy::store(CONFIG_NAME, &self.config).unwrap();
 					}
@@ -173,10 +191,6 @@ impl CustomLang {
 		});
 	}
 }
-
-fn refresh_button() {}
-
-fn render_header(ui: &mut Ui) {}
 
 fn render_footer(ctx: &CtxRef) {
 	TopBottomPanel::bottom("footer").show(ctx, |ui| {

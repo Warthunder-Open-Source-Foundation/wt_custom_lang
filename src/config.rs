@@ -1,3 +1,4 @@
+use std::fs;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,5 +25,23 @@ impl Configuration {
 		} else {
 			false
 		};
+	}
+	pub fn is_wt_path_valid(&self) -> bool {
+		if let Some(path) = &self.wt_path {
+			if fs::read(&format!("{}/config.blk", path)).is_ok() {
+				return true;
+			}
+		}
+		false
+	}
+	pub fn is_blk_setup(&self) -> bool {
+		if let Some(path) = &self.wt_path {
+			if let Ok(file) = fs::read_to_string(&format!("{}/config.blk", path)) {
+				if file.contains("testLocalization:b=yes") {
+					return true;
+				}
+			}
+		}
+		false
 	}
 }
