@@ -1,6 +1,8 @@
 use std::fs;
 use serde::{Deserialize, Serialize};
 
+const HEADER: &str = r#""<ID|readonly|noverify>";"<English>";"<French>";"<Italian>";"<German>";"<Spanish>";"<Russian>";"<Polish>";"<Czech>";"<Turkish>";"<Chinese>";"<Japanese>";"<Portuguese>";"<Ukrainian>";"<Serbian>";"<Hungarian>";"<Korean>";"<Belarusian>";"<Romanian>";"<TChinese>";"<HChinese>";"<Comments>";"<max_chars>""#;
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Unit {
 	pub id: String,
@@ -49,5 +51,8 @@ impl Unit {
 			}
 		}
 		units
+	}
+	pub fn convert_to_csv(entries: Vec<Self>) {
+		// let mut wtr = csv::Writer::from_path(fs::write("new_lang.csv", "").unwrap()).unwrap();
 	}
 }

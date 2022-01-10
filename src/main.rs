@@ -7,6 +7,7 @@ use crate::custom_lang::CustomLang;
 pub mod custom_lang;
 pub mod lang;
 mod config;
+mod primitive_lang;
 
 const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master";
 

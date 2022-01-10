@@ -6,6 +6,7 @@ pub struct Configuration {
 	pub dark_mode: bool,
 	pub wt_path: Option<String>,
 	pub blk_set: bool,
+	pub lang_folder_created: bool,
 }
 
 impl Default for Configuration {
@@ -14,6 +15,7 @@ impl Default for Configuration {
 			dark_mode: true,
 			wt_path: None,
 			blk_set: false,
+			lang_folder_created: false,
 		}
 	}
 }
