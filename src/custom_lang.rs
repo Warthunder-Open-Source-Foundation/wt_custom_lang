@@ -68,9 +68,27 @@ impl App for CustomLang {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
 				ui.add_space(15.0);
-				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
-				for primitive_entry in prim_array{
+				let mut prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
+					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0,0)))).clicked() {
+						let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
+						let mut file = fs::read_to_string(&path).unwrap();
+
+						let entry = PrimitiveEntry {
+							id: None,
+							original_english: primitive_entry.new_english.clone(),
+							new_english: primitive_entry.original_english.clone(),
+						};
+
+						PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
+
+						if fs::write(&path, file).is_ok() {
+							let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+							old.remove(i);
+							self.config.primitive_entries = serde_json::to_string(&old).unwrap();
+						}
+					}
 					ui.add_space(5.0);
 				}
 			});
