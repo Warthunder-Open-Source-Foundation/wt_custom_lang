@@ -117,12 +117,12 @@ impl CustomLang {
 			ui.add_space(10.);
 			egui::menu::bar(ui, |ui| {
 				ui.with_layout(Layout::left_to_right(), |ui| {
-					ui.add(Hyperlink::new(format!("{}/guide/how_to_use.md", REPO_URL)).text("📓 How to use"));
+					ui.add(Hyperlink::from_label_and_url("📓 How to use", format!("{}/guide/how_to_use.md", REPO_URL)));
 				});
 				ui.with_layout(Layout::right_to_left(), |ui| {
 					// let close_btn = ui.add(Button::new("❌").text_style(TextStyle::Body));
 
-					if ui.add(Button::new("🔄 Reset configuration").text_style(TextStyle::Body)).clicked() {
+					if ui.add(Button::new(RichText::new("🔄 Reset configuration").text_style(TextStyle::Body))).clicked() {
 						confy::store(CONFIG_NAME, Configuration::default()).unwrap();
 						frame.quit();
 					}
@@ -131,7 +131,7 @@ impl CustomLang {
 						self.status_menu = !self.status_menu;
 					}
 
-					if ui.add(Button::new(if self.config.dark_mode { "☀" } else { "🌙" }).text_style(TextStyle::Body)).clicked() {
+					if ui.add(Button::new(if self.config.dark_mode { RichText::new("☀").text_style(TextStyle::Body) } else { RichText::new("🌙").text_style(TextStyle::Body) })).clicked() {
 						self.config.dark_mode = !self.config.dark_mode;
 					}
 				});
@@ -158,8 +158,8 @@ impl CustomLang {
 	fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
 		Window::new("First time setup").show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
-			let select_button = ui.add(Button::new("Choose path").text_style(TextStyle::Body));
-			ui.add(Hyperlink::new(format!("{}/guide/install_folder.md", REPO_URL)).text("Where the game might be installed"));
+			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
+			ui.add(Hyperlink::from_label_and_url("Where the game might be installed",format!("{}/guide/install_folder.md", REPO_URL)));
 
 			if select_button.clicked() {
 				if let Some(path) = FileDialog::new().pick_folder() {
@@ -212,7 +212,7 @@ fn render_footer(ctx: &CtxRef) {
 	TopBottomPanel::bottom("footer").show(ctx, |ui| {
 		ui.vertical_centered(|ui| {
 			ui.add_space(10.0);
-			ui.add(Hyperlink::new("https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new").text("Report bug"));
+			ui.add(Hyperlink::from_label_and_url("Report bug","https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new"));
 			ui.add_space(10.0)
 		})
 	});
