@@ -31,21 +31,28 @@ impl App for CustomLang {
 			ctx.set_visuals(Visuals::light());
 		}
 
-		if self.config.wt_path.is_none() {
-			self.prompt_for_wt_path(ctx);
-		} else if !self.config.blk_set {
-			self.prompt_for_config_blk(ctx);
-		} else if !self.config.lang_folder_created {
-			self.prompt_for_lang_folder(ctx);
-		} else if self.status_menu {
-			self.prompt_for_status(ctx);
-		} else {
-			self.render_header_bar(ctx, frame);
-			CentralPanel::default().show(ctx, |ui| {
-				ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {});
-				render_footer(ctx);
-			});
+		match () {
+			_ if self.config.wt_path.is_none() => {
+				self.prompt_for_wt_path(ctx);
+			}
+			_ if !self.config.blk_set => {
+				self.prompt_for_config_blk(ctx);
+			}
+			_ if !self.config.lang_folder_created => {
+				self.prompt_for_lang_folder(ctx);
+			}
+			_ if self.status_menu => {
+				self.prompt_for_status(ctx);
+			}
+			_ => {}
 		}
+		self.render_header_bar(ctx, frame);
+		CentralPanel::default().show(ctx, |ui| {
+			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {});
+			render_footer(ctx);
+		});
+
+		confy::store(CONFIG_NAME, &self.config).unwrap();
 	}
 
 // fn save(&mut self, _storage: &mut dyn Storage) {
@@ -125,7 +132,6 @@ impl CustomLang {
 					}
 
 					if ui.add(Button::new(if self.config.dark_mode { "☀" } else { "🌙" }).text_style(TextStyle::Body)).clicked() {
-						confy::store(CONFIG_NAME, &self.config).unwrap();
 						self.config.dark_mode = !self.config.dark_mode;
 					}
 				});
@@ -159,7 +165,6 @@ impl CustomLang {
 				if let Some(path) = FileDialog::new().pick_folder() {
 					if fs::read(&format!("{}/config.blk", path.to_str().unwrap())).is_ok() {
 						self.config.wt_path = Some(path.to_str().unwrap().to_owned());
-						confy::store(CONFIG_NAME, &self.config).unwrap();
 						ui.add(Label::new(format!("Path {} successfully selected", path.to_str().unwrap())));
 					} else {
 						ui.add(Label::new(format!("Path {} is invalid", path.to_str().unwrap())));
@@ -181,26 +186,22 @@ impl CustomLang {
 
 					if fs::write(&blk_path, new).is_ok() {
 						self.config.blk_set = true;
-						confy::store(CONFIG_NAME, &self.config).unwrap();
 					}
 				}
 				if ui.add(Button::new("I already configured config.blk")).clicked() {
 					self.config.blk_set = true;
-					confy::store(CONFIG_NAME, &self.config).unwrap();
 				}
 			} else {
 				self.config.blk_set = true;
-				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 		});
 	}
 	fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
-		Window::new("Generating the lang folder").show(ctx, |ui|{
+		Window::new("Generating the lang folder").show(ctx, |ui| {
 			ui.label(RichText::new("Launch the game and close it again"));
 			if ui.add(Button::new("Check if it worked")).clicked() {
 				if fs::read_dir(format!("{}/lang", self.config.wt_path.as_ref().unwrap())).is_ok() {
 					self.config.lang_folder_created = true;
-					confy::store(CONFIG_NAME, &self.config);
 				}
 			}
 		});
