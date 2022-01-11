@@ -1,21 +1,31 @@
 use std::fs;
 use serde::{Serialize, Deserialize};
+use crate::primitive_lang::PrimitiveEntry;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Configuration {
+	// pub primitive_entries: Vec<PrimitiveEntry>,
+	// Currently a string as the toml crate cannot parse named arrays
+	// Yes it creates significant runtime overhead and code verbosity but this needs to wait until the local cache is implemented
+	pub primitive_entries: String,
 	pub dark_mode: bool,
 	pub wt_path: Option<String>,
 	pub blk_set: bool,
 	pub lang_folder_created: bool,
+	pub prompted_about_lang_perm: bool,
 }
 
 impl Default for Configuration {
 	fn default() -> Self {
+		let mut vec = vec![PrimitiveEntry::default()];
+		vec.clear();
 		Self {
+			primitive_entries: serde_json::to_string(&vec).unwrap(),
 			dark_mode: true,
 			wt_path: None,
 			blk_set: false,
 			lang_folder_created: false,
+			prompted_about_lang_perm: false,
 		}
 	}
 }

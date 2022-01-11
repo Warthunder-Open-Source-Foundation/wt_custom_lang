@@ -16,7 +16,7 @@ use execute::Execute;
 use rfd::FileDialog;
 
 use crate::config::Configuration;
-use crate::primitive_lang::Entry;
+use crate::primitive_lang::PrimitiveEntry;
 use crate::REPO_URL;
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
@@ -52,6 +52,12 @@ impl App for CustomLang {
 			}
 			_ if self.add_csv_entry.is_some() => {
 				self.prompt_for_entry(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
+			}
+			#[cfg(windows)]
+			_ if !self.config.prompted_about_lang_perm => {
+				self.prompt_lang_file_warn(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 			_ => {}
 		}
@@ -60,6 +66,12 @@ impl App for CustomLang {
 			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
 				if ui.add(Button::new("Add new entry")).clicked() {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+				}
+				ui.add_space(15.0);
+				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+				for primitive_entry in prim_array{
+					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
+					ui.add_space(5.0);
 				}
 			});
 			render_footer(ctx);
@@ -245,20 +257,32 @@ impl CustomLang {
 				let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
 				let mut file = fs::read_to_string(&path).unwrap();
 
-				let entry = Entry {
+				let entry = PrimitiveEntry {
 					id: None,
 					original_english: self.add_csv_entry.as_ref().unwrap().0.trim().to_string(),
 					new_english: self.add_csv_entry.as_ref().unwrap().1.trim().to_string(),
 				};
 
-				Entry::replace_all_entries(vec![entry], &mut file);
+				PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
 
-				fs::write(&path, file).unwrap();
+				if fs::write(&path, file).is_ok() {
+					let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+					old.push(entry);
+					self.config.primitive_entries = serde_json::to_string(&old).unwrap();
+				}
 				self.add_csv_entry = None;
 			}
 			if ui.add(Button::new(RichText::new("Cancel").text_style(TextStyle::Heading))).clicked() {
 				self.add_csv_entry = None;
 			}
+		});
+	}
+	fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
+		Window::new("Setting lang folder permissions").show(ctx, |ui| {
+			if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
+				self.config.prompted_about_lang_perm = true;
+			}
+			ui.add(Hyperlink::from_label_and_url("I dont know how to do that", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/windows_lang_permission.md"));
 		});
 	}
 }
