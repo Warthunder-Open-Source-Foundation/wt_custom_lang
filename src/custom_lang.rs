@@ -1,15 +1,15 @@
-use std::borrow::Cow;
+
 use std::fs;
-use std::process::exit;
-use std::thread::sleep;
-use std::time::Duration;
+
+
+
 use eframe::egui::*;
 use eframe::egui::Button;
 use eframe::epi::{App, Frame, Storage};
-use eframe::{egui, NativeOptions, run_native};
+use eframe::{egui};
 use eframe::egui::FontFamily::Proportional;
-use eframe::egui::Key::B;
-use eframe::egui::TextStyle::{Body, Button as ButtonStyle, Heading};
+
+use eframe::egui::TextStyle::{Body, Heading};
 use eframe::egui::Label;
 use rfd::FileDialog;
 
@@ -48,7 +48,7 @@ impl App for CustomLang {
 		}
 		self.render_header_bar(ctx, frame);
 		CentralPanel::default().show(ctx, |ui| {
-			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {});
+			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |_ui| {});
 			render_footer(ctx);
 		});
 

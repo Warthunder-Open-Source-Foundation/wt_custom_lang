@@ -1,4 +1,4 @@
-use eframe::egui::TextBuffer;
+
 use regex::Regex;
 
 pub struct Entry {
@@ -20,7 +20,7 @@ impl Entry {
 }
 
 mod tests {
-	use crate::primitive_lang::Entry;
+	use super::*;
 
 	#[test]
 	fn regex_confirm() {

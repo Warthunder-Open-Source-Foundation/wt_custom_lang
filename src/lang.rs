@@ -52,7 +52,7 @@ impl Unit {
 		}
 		units
 	}
-	pub fn convert_to_csv(entries: Vec<Self>) {
+	pub fn convert_to_csv(_entries: Vec<Self>) {
 		// let mut wtr = csv::Writer::from_path(fs::write("new_lang.csv", "").unwrap()).unwrap();
 	}
 }
