@@ -1,6 +1,7 @@
-
-use std::fs;
-
+use std::{fs, thread};
+use std::fs::File;
+use std::io::{Read, Write};
+use std::process::Command;
 
 
 use eframe::egui::*;
@@ -11,9 +12,11 @@ use eframe::egui::FontFamily::Proportional;
 
 use eframe::egui::TextStyle::{Body, Heading};
 use eframe::egui::Label;
+use execute::Execute;
 use rfd::FileDialog;
 
 use crate::config::Configuration;
+use crate::primitive_lang::Entry;
 use crate::REPO_URL;
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
@@ -21,6 +24,7 @@ const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely ne
 pub struct CustomLang {
 	pub config: Configuration,
 	pub status_menu: bool,
+	pub add_csv_entry: Option<(String, String)>,
 }
 
 impl App for CustomLang {
@@ -30,29 +34,36 @@ impl App for CustomLang {
 		} else {
 			ctx.set_visuals(Visuals::light());
 		}
-
 		match () {
 			_ if self.config.wt_path.is_none() => {
 				self.prompt_for_wt_path(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 			_ if !self.config.blk_set => {
 				self.prompt_for_config_blk(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 			_ if !self.config.lang_folder_created => {
 				self.prompt_for_lang_folder(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 			_ if self.status_menu => {
 				self.prompt_for_status(ctx);
+			}
+			_ if self.add_csv_entry.is_some() => {
+				self.prompt_for_entry(ctx);
 			}
 			_ => {}
 		}
 		self.render_header_bar(ctx, frame);
 		CentralPanel::default().show(ctx, |ui| {
-			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |_ui| {});
+			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+				if ui.add(Button::new("Add new entry")).clicked() {
+					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+				}
+			});
 			render_footer(ctx);
 		});
-
-		confy::store(CONFIG_NAME, &self.config).unwrap();
 	}
 
 // fn save(&mut self, _storage: &mut dyn Storage) {
@@ -110,6 +121,7 @@ impl CustomLang {
 		Self {
 			config,
 			status_menu: false,
+			add_csv_entry: None,
 		}
 	}
 	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
@@ -159,7 +171,7 @@ impl CustomLang {
 		Window::new("First time setup").show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
-			ui.add(Hyperlink::from_label_and_url("Where the game might be installed",format!("{}/guide/install_folder.md", REPO_URL)));
+			ui.add(Hyperlink::from_label_and_url("Where the game might be installed", format!("{}/guide/install_folder.md", REPO_URL)));
 
 			if select_button.clicked() {
 				if let Some(path) = FileDialog::new().pick_folder() {
@@ -197,12 +209,55 @@ impl CustomLang {
 		});
 	}
 	fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
-		Window::new("Generating the lang folder").show(ctx, |ui| {
-			ui.label(RichText::new("Launch the game and close it again"));
-			if ui.add(Button::new("Check if it worked")).clicked() {
+		Window::new("Steps for generating the lang folder").show(ctx, |ui| {
+			if ui.add(Button::new(RichText::new("Launch game").text_style(TextStyle::Heading))).clicked() {
+				// Cloning as the thread consumes the String entirely
+				let path = self.config.wt_path.as_ref().unwrap().clone();
+
+				#[cfg(windows)] let format_path = format!("{}/launcher.exe", path);
+
+				// TODO Add linux launcher path
+
+				// Spawning loose thread as application completely stalls as long as launcher.exe lives
+				thread::spawn(move || {
+					Command::new(format_path).execute();
+				});
+			}
+
+			ui.add_space(20.0);
+
+			if ui.add(Button::new(RichText::new("Check if it was created").text_style(TextStyle::Heading))).clicked() {
 				if fs::read_dir(format!("{}/lang", self.config.wt_path.as_ref().unwrap())).is_ok() {
 					self.config.lang_folder_created = true;
 				}
+			}
+		});
+	}
+	fn prompt_for_entry(&mut self, ctx: &CtxRef) {
+		Window::new("Adding a new entry").show(ctx, |ui| {
+			let mut original = self.add_csv_entry.clone().unwrap();
+			ui.add(TextEdit::singleline(&mut original.0));
+			ui.add(TextEdit::singleline(&mut original.1));
+
+			self.add_csv_entry = Some(original);
+
+			if ui.add(Button::new(RichText::new("Create!").text_style(TextStyle::Heading))).clicked() {
+				let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
+				let mut file = fs::read_to_string(&path).unwrap();
+
+				let entry = Entry {
+					id: None,
+					original_english: self.add_csv_entry.as_ref().unwrap().0.trim().to_string(),
+					new_english: self.add_csv_entry.as_ref().unwrap().1.trim().to_string(),
+				};
+
+				Entry::replace_all_entries(vec![entry], &mut file);
+
+				fs::write(&path, file).unwrap();
+				self.add_csv_entry = None;
+			}
+			if ui.add(Button::new(RichText::new("Cancel").text_style(TextStyle::Heading))).clicked() {
+				self.add_csv_entry = None;
 			}
 		});
 	}
@@ -212,7 +267,7 @@ fn render_footer(ctx: &CtxRef) {
 	TopBottomPanel::bottom("footer").show(ctx, |ui| {
 		ui.vertical_centered(|ui| {
 			ui.add_space(10.0);
-			ui.add(Hyperlink::from_label_and_url("Report bug","https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new"));
+			ui.add(Hyperlink::from_label_and_url("Report bug", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new"));
 			ui.add_space(10.0)
 		})
 	});
