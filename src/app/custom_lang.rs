@@ -1,9 +1,5 @@
 use std::{fs};
 
-
-
-
-
 use eframe::egui::*;
 use eframe::egui::Button;
 use eframe::epi::{App, Frame, Storage};
@@ -67,6 +63,11 @@ impl App for CustomLang {
 				if ui.add(Button::new("Add new entry")).clicked() {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
+
+				if ui.add(Button::new("Turn off custom lang")).clicked() {
+					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+				}
+
 				ui.add_space(15.0);
 				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
@@ -162,8 +163,6 @@ impl CustomLang {
 					ui.add(Hyperlink::from_label_and_url("📓 How to use", format!("{}/guide/how_to_use.md", REPO_URL)));
 				});
 				ui.with_layout(Layout::right_to_left(), |ui| {
-					// let close_btn = ui.add(Button::new("❌").text_style(TextStyle::Body));
-
 					if ui.add(Button::new(RichText::new("🔄 Reset configuration").text_style(TextStyle::Body))).clicked() {
 						confy::store(CONFIG_NAME, Configuration::default()).unwrap();
 						frame.quit();
