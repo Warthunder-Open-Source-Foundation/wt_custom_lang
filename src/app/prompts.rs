@@ -32,6 +32,10 @@ impl CustomLang {
 			if self.config.is_lang_folder_created() {
 				ui.add(Label::new(RichText::new(format!("Lang folder was created ✅")).color(Color32::from_rgb(0, 255, 0))));
 			}
+			// #[cfg(target_os = "windows")]
+			if self.config.is_lang_perm_set() {
+				ui.add(Label::new(RichText::new(format!("Lang permission is set ✅")).color(Color32::from_rgb(0, 255, 0))));
+			}
 			if ui.add(Button::new("Close")).clicked() {
 				self.status_menu = false;
 			}
