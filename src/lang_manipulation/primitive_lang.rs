@@ -3,6 +3,7 @@ use regex::Regex;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrimitiveEntry {
+	pub file: String,
 	pub id: Option<String>,
 	pub original_english: String,
 	pub new_english: String,

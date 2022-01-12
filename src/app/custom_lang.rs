@@ -11,7 +11,7 @@ use eframe::egui::Label;
 
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::app::prompts::prompt_for_entry::PromptForEntry;
+use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::REPO_URL;
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
@@ -86,22 +86,8 @@ impl App for CustomLang {
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
 					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
-						let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
-						let mut file = fs::read_to_string(&path).unwrap();
-
-						let entry = PrimitiveEntry {
-							id: None,
-							original_english: primitive_entry.new_english.clone(),
-							new_english: primitive_entry.original_english.clone(),
-						};
-
-						PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
-
-						if fs::write(&path, file).is_ok() {
-							let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
-							old.remove(i);
-							self.config.primitive_entries = serde_json::to_string(&old).unwrap();
-						}
+						self.undo_entry(i, primitive_entry);
+						confy::store(CONFIG_NAME, &self.config).unwrap();
 					}
 					ui.add_space(5.0);
 				}
@@ -165,7 +151,7 @@ impl CustomLang {
 		Self {
 			config,
 			status_menu: false,
-			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: false }
+			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: LangType::default(), }
 		}
 	}
 	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
