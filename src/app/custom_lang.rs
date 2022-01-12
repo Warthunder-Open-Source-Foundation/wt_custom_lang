@@ -1,7 +1,6 @@
 use std::{fs};
 
-use eframe::egui::*;
-use eframe::egui::Button;
+use eframe::egui::{Button, CentralPanel, Color32, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Layout, RichText, ScrollArea, TextStyle, TopBottomPanel, Visuals};
 use eframe::epi::{App, Frame, Storage};
 use eframe::{egui};
 use eframe::egui::FontFamily::Proportional;
@@ -64,8 +63,20 @@ impl App for CustomLang {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
 
-				if ui.add(Button::new("Turn off custom lang")).clicked() {
-					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+				let lang_enabled = self.config.is_lang_enabled().unwrap();
+				let lang_toggle_text = if lang_enabled {
+					"Disable custom lang"
+				} else {
+					"Enable custom lang"
+				};
+				if ui.add(Button::new(lang_toggle_text)).clicked() {
+					let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
+					let mut file = fs::read_to_string(&path).unwrap();
+
+					const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes","testLocalization:b=no"];
+					let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
+
+					fs::write(&path, file).unwrap();
 				}
 
 				ui.add_space(15.0);
