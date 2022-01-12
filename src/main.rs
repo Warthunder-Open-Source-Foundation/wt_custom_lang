@@ -3,12 +3,11 @@ use eframe::egui::Vec2;
 use eframe::{NativeOptions, run_native};
 
 
-use crate::custom_lang::CustomLang;
+use app::custom_lang::CustomLang;
 
-pub mod custom_lang;
-pub mod lang;
 mod config;
-mod primitive_lang;
+mod lang_manipulation;
+mod app;
 
 const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master";
 

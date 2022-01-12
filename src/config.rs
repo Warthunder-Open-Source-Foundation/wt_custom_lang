@@ -1,6 +1,6 @@
 use std::fs;
 use serde::{Serialize, Deserialize};
-use crate::primitive_lang::PrimitiveEntry;
+use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Configuration {
