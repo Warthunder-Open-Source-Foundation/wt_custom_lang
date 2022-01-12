@@ -99,14 +99,15 @@ impl CustomLang {
 			}
 		});
 	}
-	pub(crate) fn prompt_for_entry(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_entry(&mut self, ctx: &CtxRef) {
 		Window::new("Adding a new entry").show(ctx, |ui| {
 			let mut original = self.add_csv_entry.clone().unwrap();
-			ui.add(TextEdit::singleline(&mut original.0));
-			ui.add(TextEdit::singleline(&mut original.1));
+			ui.add(TextEdit::singleline(&mut original.0).hint_text("Old name"));
+			ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
 
 			self.add_csv_entry = Some(original);
 
+			ui.horizontal(|ui|{
 			if ui.add(Button::new(RichText::new("Create!").text_style(TextStyle::Heading))).clicked() {
 				let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
 				let mut file = fs::read_to_string(&path).unwrap();
@@ -129,9 +130,10 @@ impl CustomLang {
 			if ui.add(Button::new(RichText::new("Cancel").text_style(TextStyle::Heading))).clicked() {
 				self.add_csv_entry = None;
 			}
+			});
 		});
 	}
-	pub(crate) fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
+	pub fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
 		Window::new("Setting lang folder permissions").show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
 				self.config.prompted_about_lang_perm = true;

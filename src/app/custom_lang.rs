@@ -58,11 +58,12 @@ impl App for CustomLang {
 		self.render_header_bar(ctx, frame);
 		CentralPanel::default().show(ctx, |ui| {
 			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
+				ui.horizontal(|ui|{
 				if ui.add(Button::new("Add new entry")).clicked() {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
 
-				let lang_enabled = self.config.is_lang_enabled().unwrap();
+				let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
 				let lang_toggle_text = if lang_enabled {
 					"Disable custom lang"
 				} else {
@@ -77,6 +78,7 @@ impl App for CustomLang {
 
 					fs::write(&path, file).unwrap();
 				}
+				});
 
 				ui.add_space(15.0);
 				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
