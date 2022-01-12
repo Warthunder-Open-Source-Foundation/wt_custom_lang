@@ -9,7 +9,6 @@ use eframe::egui::TextStyle::{Body, Heading};
 use eframe::egui::Label;
 
 
-
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::REPO_URL;
@@ -73,7 +72,7 @@ impl App for CustomLang {
 					let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
 					let mut file = fs::read_to_string(&path).unwrap();
 
-					const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes","testLocalization:b=no"];
+					const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
 					let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
 
 					fs::write(&path, file).unwrap();
@@ -83,7 +82,7 @@ impl App for CustomLang {
 				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
-					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0,0)))).clicked() {
+					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
 						let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
 						let mut file = fs::read_to_string(&path).unwrap();
 

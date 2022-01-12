@@ -1,7 +1,5 @@
-
 use eframe::egui::Vec2;
 use eframe::{NativeOptions, run_native};
-
 
 use app::custom_lang::CustomLang;
 

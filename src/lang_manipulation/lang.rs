@@ -44,7 +44,7 @@ impl Unit {
 
 		for entry in rdr.records() {
 			if let Ok(result) = entry {
-				units.push( Unit {
+				units.push(Unit {
 					id: result[0].to_owned(),
 					english: result[1].to_owned(),
 				})

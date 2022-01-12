@@ -1,16 +1,8 @@
 use std::{fs, thread};
-
-
 use std::process::Command;
-
 
 use eframe::egui::*;
 use eframe::egui::Button;
-
-
-
-
-
 use eframe::egui::Label;
 use execute::Execute;
 use rfd::FileDialog;
@@ -139,7 +131,7 @@ impl CustomLang {
 			}
 		});
 	}
-	fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
+	pub(crate) fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
 		Window::new("Setting lang folder permissions").show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
 				self.config.prompted_about_lang_perm = true;

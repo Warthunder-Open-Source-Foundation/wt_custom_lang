@@ -19,15 +19,12 @@ impl PrimitiveEntry {
 }
 
 mod tests {
-	
-	
-
 	#[test]
 	fn regex_confirm() {
 		let entries = vec![PrimitiveEntry {
 			id: None,
 			original_english: "MiG-23MLD".to_string(),
-			new_english: "MiG-23MALD".to_string()
+			new_english: "MiG-23MALD".to_string(),
 		}];
 		let mut old_text = r#""mig_23mld_shop";"MiG-23MLD";"MiG-23MLD";"MiG-23MLD""#.to_owned();
 		PrimitiveEntry::replace_all_entries(entries, &mut old_text);

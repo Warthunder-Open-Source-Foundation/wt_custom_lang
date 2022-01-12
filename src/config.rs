@@ -30,7 +30,7 @@ impl Default for Configuration {
 			wt_path: None,
 			blk_set: false,
 			lang_folder_created: false,
-			prompted_about_lang_perm: false
+			prompted_about_lang_perm: false,
 		}
 	}
 }
