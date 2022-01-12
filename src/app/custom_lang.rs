@@ -174,6 +174,7 @@ impl CustomLang {
 
 					if ui.add(Button::new(if self.config.dark_mode { RichText::new("☀").text_style(TextStyle::Body) } else { RichText::new("🌙").text_style(TextStyle::Body) })).clicked() {
 						self.config.dark_mode = !self.config.dark_mode;
+						confy::store(CONFIG_NAME, &self.config).unwrap();
 					}
 				});
 			});
