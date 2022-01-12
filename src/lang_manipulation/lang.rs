@@ -1,4 +1,5 @@
 use std::fs;
+
 use serde::{Deserialize, Serialize};
 
 const HEADER: &str = r#""<ID|readonly|noverify>";"<English>";"<French>";"<Italian>";"<German>";"<Spanish>";"<Russian>";"<Polish>";"<Czech>";"<Turkish>";"<Chinese>";"<Japanese>";"<Portuguese>";"<Ukrainian>";"<Serbian>";"<Hungarian>";"<Korean>";"<Belarusian>";"<Romanian>";"<TChinese>";"<HChinese>";"<Comments>";"<max_chars>""#;

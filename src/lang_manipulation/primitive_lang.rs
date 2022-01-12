@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrimitiveEntry {

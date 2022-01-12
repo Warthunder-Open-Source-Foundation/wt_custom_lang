@@ -1,17 +1,15 @@
-use std::{fs};
+use std::fs;
 
+use eframe::egui;
 use eframe::egui::{Button, CentralPanel, Color32, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Layout, RichText, ScrollArea, TextStyle, TopBottomPanel, Visuals};
-use eframe::epi::{App, Frame, Storage};
-use eframe::{egui};
 use eframe::egui::FontFamily::Proportional;
-
-use eframe::egui::TextStyle::{Body, Heading};
 use eframe::egui::Label;
+use eframe::egui::TextStyle::{Body, Heading};
+use eframe::epi::{App, Frame, Storage};
 
-
+use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::REPO_URL;
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
@@ -59,26 +57,26 @@ impl App for CustomLang {
 		self.render_header_bar(ctx, frame);
 		CentralPanel::default().show(ctx, |ui| {
 			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
-				ui.horizontal(|ui|{
-				if ui.add(Button::new("Add new entry")).clicked() {
-					self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
-				}
+				ui.horizontal(|ui| {
+					if ui.add(Button::new("Add new entry")).clicked() {
+						self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+					}
 
-				let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
-				let lang_toggle_text = if lang_enabled {
-					"Disable custom lang"
-				} else {
-					"Enable custom lang"
-				};
-				if ui.add(Button::new(lang_toggle_text)).clicked() {
-					let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
-					let mut file = fs::read_to_string(&path).unwrap();
+					let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
+					let lang_toggle_text = if lang_enabled {
+						"Disable custom lang"
+					} else {
+						"Enable custom lang"
+					};
+					if ui.add(Button::new(lang_toggle_text)).clicked() {
+						let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
+						let mut file = fs::read_to_string(&path).unwrap();
 
-					const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
-					let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
+						const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
+						let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
 
-					fs::write(&path, file).unwrap();
-				}
+						fs::write(&path, file).unwrap();
+					}
 				});
 
 				ui.add_space(15.0);
@@ -151,7 +149,7 @@ impl CustomLang {
 		Self {
 			config,
 			status_menu: false,
-			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: LangType::default(), }
+			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: LangType::default() },
 		}
 	}
 	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {

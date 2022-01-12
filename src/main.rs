@@ -1,6 +1,7 @@
 use std::process::exit;
-use eframe::egui::Vec2;
+
 use eframe::{NativeOptions, run_native};
+use eframe::egui::Vec2;
 use sysinfo::{System, SystemExt};
 
 use app::custom_lang::CustomLang;

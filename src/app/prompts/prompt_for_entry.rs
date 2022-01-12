@@ -6,9 +6,8 @@ use eframe::egui::Label;
 use eframe::egui::style::Selection;
 use execute::Execute;
 use rfd::FileDialog;
+
 use crate::CustomLang;
-
-
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 pub struct PromptForEntry {
@@ -29,13 +28,13 @@ impl LangType {
 		match self {
 			LangType::Units => {
 				"units"
-			},
+			}
 			LangType::Ui => {
 				"ui"
-			},
+			}
 			LangType::CommonLanguages => {
 				"_common_languages"
-			},
+			}
 			LangType::Menu => {
 				"menu"
 			}
@@ -56,13 +55,15 @@ impl CustomLang {
 			ui.add(TextEdit::singleline(&mut original.0).hint_text("Old name"));
 			ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
 
-			ComboBox::from_label("").selected_text(format!("{:?}", self.prompt_for_entry.toggle_dropdown)).show_ui(ui, |ui| {
-				ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Units, "Unit");
-				ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Ui, "Ui");
-				ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::CommonLanguages, "Common language");
-				ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Menu, "Menu");
-			},
-			);
+			ui.horizontal(|ui| {
+				ComboBox::from_label("").selected_text(format!("{:?}", self.prompt_for_entry.toggle_dropdown)).show_ui(ui, |ui| {
+					ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Units, "Unit");
+					ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Ui, "Ui");
+					ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::CommonLanguages, "Common language");
+					ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Menu, "Menu");
+				}, );
+				ui.add(Hyperlink::from_label_and_url("What these options mean", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/wiki/Types-of-supported-language-files"));
+			});
 
 			self.prompt_for_entry.add_csv_entry = Some(original);
 

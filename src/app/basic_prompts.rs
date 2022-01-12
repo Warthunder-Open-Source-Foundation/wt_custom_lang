@@ -8,10 +8,8 @@ use eframe::egui::style::Selection;
 use execute::Execute;
 use rfd::FileDialog;
 
-
-use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-
 use crate::{CustomLang, REPO_URL};
+use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 impl CustomLang {
 	pub(crate) fn prompt_for_status(&mut self, ctx: &CtxRef) {
