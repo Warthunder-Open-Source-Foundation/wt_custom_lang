@@ -244,9 +244,9 @@ impl CustomLang {
 				// Cloning as the thread consumes the String entirely
 				let path = self.config.wt_path.as_ref().unwrap().clone();
 
-				#[cfg(windows)] let format_path = format!("{}/launcher.exe", path);
+				#[cfg(target_os = "windows")] let format_path = format!("{}/launcher.exe", path);
 
-				// TODO Add linux launcher path
+				#[cfg(target_os = "linux")] let format_path = format!("{}/launcher", path);
 
 				// Spawning loose thread as application completely stalls as long as launcher.exe lives
 				thread::spawn(move || {
