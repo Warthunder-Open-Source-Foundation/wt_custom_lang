@@ -4,6 +4,7 @@ use std::process::Command;
 use eframe::egui::*;
 use eframe::egui::Button;
 use eframe::egui::Label;
+use eframe::egui::style::Selection;
 use execute::Execute;
 use rfd::FileDialog;
 
@@ -97,40 +98,6 @@ impl CustomLang {
 					self.config.lang_folder_created = true;
 				}
 			}
-		});
-	}
-	pub fn prompt_for_entry(&mut self, ctx: &CtxRef) {
-		Window::new("Adding a new entry").show(ctx, |ui| {
-			let mut original = self.add_csv_entry.clone().unwrap();
-			ui.add(TextEdit::singleline(&mut original.0).hint_text("Old name"));
-			ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
-
-			self.add_csv_entry = Some(original);
-
-			ui.horizontal(|ui|{
-			if ui.add(Button::new(RichText::new("Create!").text_style(TextStyle::Heading))).clicked() {
-				let path = format!("{}/lang/units.csv", self.config.wt_path.as_ref().unwrap());
-				let mut file = fs::read_to_string(&path).unwrap();
-
-				let entry = PrimitiveEntry {
-					id: None,
-					original_english: self.add_csv_entry.as_ref().unwrap().0.trim().to_string(),
-					new_english: self.add_csv_entry.as_ref().unwrap().1.trim().to_string(),
-				};
-
-				PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
-
-				if fs::write(&path, file).is_ok() {
-					let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
-					old.push(entry);
-					self.config.primitive_entries = serde_json::to_string(&old).unwrap();
-				}
-				self.add_csv_entry = None;
-			}
-			if ui.add(Button::new(RichText::new("Cancel").text_style(TextStyle::Heading))).clicked() {
-				self.add_csv_entry = None;
-			}
-			});
 		});
 	}
 	pub fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {

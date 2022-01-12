@@ -11,6 +11,7 @@ use eframe::egui::Label;
 
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
+use crate::app::prompts::prompt_for_entry::PromptForEntry;
 use crate::REPO_URL;
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
@@ -18,7 +19,7 @@ const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely ne
 pub struct CustomLang {
 	pub config: Configuration,
 	pub status_menu: bool,
-	pub add_csv_entry: Option<(String, String)>,
+	pub prompt_for_entry: PromptForEntry,
 }
 
 impl App for CustomLang {
@@ -44,7 +45,7 @@ impl App for CustomLang {
 			_ if self.status_menu => {
 				self.prompt_for_status(ctx);
 			}
-			_ if self.add_csv_entry.is_some() => {
+			_ if self.prompt_for_entry.add_csv_entry.is_some() => {
 				self.prompt_for_entry(ctx);
 				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
@@ -60,7 +61,7 @@ impl App for CustomLang {
 			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
 				ui.horizontal(|ui|{
 				if ui.add(Button::new("Add new entry")).clicked() {
-					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+					self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
 
 				let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
@@ -164,7 +165,7 @@ impl CustomLang {
 		Self {
 			config,
 			status_menu: false,
-			add_csv_entry: None,
+			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: false }
 		}
 	}
 	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
