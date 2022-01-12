@@ -19,8 +19,8 @@ impl PrimitiveEntry {
 }
 
 mod tests {
-	use regex::RegexBuilder;
-	use super::*;
+	
+	
 
 	#[test]
 	fn regex_confirm() {

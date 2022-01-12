@@ -1,21 +1,21 @@
 use std::{fs, thread};
-use std::fs::File;
-use std::io::{Read, Write};
+
+
 use std::process::Command;
 
 
 use eframe::egui::*;
 use eframe::egui::Button;
-use eframe::epi::{App, Frame, Storage};
-use eframe::{egui};
-use eframe::egui::FontFamily::Proportional;
 
-use eframe::egui::TextStyle::{Body, Heading};
+
+
+
+
 use eframe::egui::Label;
 use execute::Execute;
 use rfd::FileDialog;
 
-use crate::config::Configuration;
+
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 use crate::{CustomLang, REPO_URL};

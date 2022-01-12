@@ -1,7 +1,7 @@
-use std::{fs, thread};
-use std::fs::File;
-use std::io::{Read, Write};
-use std::process::Command;
+use std::{fs};
+
+
+
 
 
 use eframe::egui::*;
@@ -12,8 +12,8 @@ use eframe::egui::FontFamily::Proportional;
 
 use eframe::egui::TextStyle::{Body, Heading};
 use eframe::egui::Label;
-use execute::Execute;
-use rfd::FileDialog;
+
+
 
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
@@ -68,7 +68,7 @@ impl App for CustomLang {
 					self.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 				}
 				ui.add_space(15.0);
-				let mut prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
 					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0,0)))).clicked() {
