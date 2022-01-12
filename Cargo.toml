@@ -35,7 +35,8 @@ csv = "^1.1.6"
 confy = "^0.4.0"
 rfd = "^0.6.3"
 regex = "^1.5.4"
-execute = "0.2.9"
+execute = "^0.2.9"
+sysinfo = "^0.22.5"
 
 #notify-rust = "4.5.5"
 
