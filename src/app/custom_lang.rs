@@ -62,11 +62,11 @@ impl App for CustomLang {
 						self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 					}
 
-					let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
+					let lang_enabled = self.config.is_lang_enabled().unwrap();
 					let lang_toggle_text: RichText = if lang_enabled {
-						RichText::new("custom lang on").color(Color32::from_rgb(0, 255, 0))
+						RichText::new("Global custom lang on").color(Color32::from_rgb(0, 255, 0))
 					} else {
-						RichText::new("custom lang off").color(Color32::from_rgb(255, 0, 0))
+						RichText::new("Global custom lang off").color(Color32::from_rgb(255, 0, 0))
 					};
 					if ui.add(Button::new(lang_toggle_text)).clicked() {
 						let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
@@ -75,7 +75,11 @@ impl App for CustomLang {
 						const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
 						let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
 
-						fs::write(&path, file).unwrap();
+						if fs::write(&path, file).is_ok() {
+							self.config.enable_lang = self.config.is_lang_enabled().unwrap();
+							confy::store(CONFIG_NAME, &self.config).unwrap();
+
+						}
 					}
 				});
 
