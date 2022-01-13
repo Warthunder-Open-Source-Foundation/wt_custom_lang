@@ -189,7 +189,8 @@ fn render_footer(ctx: &CtxRef) {
 		ui.vertical_centered(|ui| {
 			ui.add_space(10.0);
 			ui.add(Hyperlink::from_label_and_url("Report bug", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/issues/new"));
-			ui.add_space(10.0)
+			ui.add_space(10.0);
+			ui.add(Hyperlink::from_label_and_url("© 2022 Warthunder-Open-Source-Foundation", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/LICENSE"));
 		})
 	});
 }
