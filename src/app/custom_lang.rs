@@ -63,10 +63,10 @@ impl App for CustomLang {
 					}
 
 					let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
-					let lang_toggle_text = if lang_enabled {
-						"Disable custom lang"
+					let lang_toggle_text: RichText = if lang_enabled {
+						RichText::new("custom lang on").color(Color32::from_rgb(0, 255, 0))
 					} else {
-						"Enable custom lang"
+						RichText::new("custom lang off").color(Color32::from_rgb(255, 0, 0))
 					};
 					if ui.add(Button::new(lang_toggle_text)).clicked() {
 						let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
