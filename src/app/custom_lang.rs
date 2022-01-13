@@ -10,9 +10,7 @@ use eframe::epi::{App, Frame, Storage};
 use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::REPO_URL;
-
-const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
+use crate::{CONFIG_NAME, REPO_URL};
 
 pub struct CustomLang {
 	pub config: Configuration,
@@ -70,7 +68,7 @@ impl App for CustomLang {
 					};
 					if ui.add(Button::new(lang_toggle_text)).clicked() {
 						let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
-						let mut file = fs::read_to_string(&path).unwrap();
+						let file = fs::read_to_string(&path).unwrap();
 
 						const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
 						let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
