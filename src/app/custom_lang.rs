@@ -62,7 +62,7 @@ impl App for CustomLang {
 						self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
 					}
 
-					let lang_enabled = self.config.is_lang_enabled().unwrap();
+					let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
 					let lang_toggle_text: RichText = if lang_enabled {
 						RichText::new("Global custom lang on").color(Color32::from_rgb(0, 255, 0))
 					} else {
