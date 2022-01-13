@@ -85,7 +85,8 @@ impl CustomLang {
 
 				// Spawning loose thread as application completely stalls as long as launcher.exe lives
 				thread::spawn(move || {
-					Command::new(format_path).execute();
+					// Not catching as the process will be orphaned
+					let _ = Command::new(format_path).execute();
 				});
 			}
 
