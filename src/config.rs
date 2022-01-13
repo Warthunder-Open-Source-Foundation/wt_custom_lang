@@ -26,7 +26,7 @@ pub struct Configuration {
 impl Default for Configuration {
 	fn default() -> Self {
 		Self {
-			dark_mode: false,
+			dark_mode: true,
 			enable_lang: true,
 			primitive_entries: "[]".to_string(),
 			wt_path: None,
