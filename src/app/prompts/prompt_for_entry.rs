@@ -81,7 +81,7 @@ impl CustomLang {
 						new_english: self.prompt_for_entry.add_csv_entry.as_ref().unwrap().1.trim().to_string(),
 					};
 
-					PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
+					PrimitiveEntry::replace_all_entries_str(vec![entry.clone()], &mut file, true);
 
 					if fs::write(&path, file).is_ok() {
 						let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
@@ -109,7 +109,7 @@ impl CustomLang {
 			new_english: primitive_entry.original_english.clone(),
 		};
 
-		PrimitiveEntry::replace_all_entries(vec![entry.clone()], &mut file);
+		PrimitiveEntry::replace_all_entries_str(vec![entry.clone()], &mut file, true);
 
 		if fs::write(&path, file).is_ok() {
 			let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
