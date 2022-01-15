@@ -510,6 +510,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "duckstore"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99986b51e13cbe32cf0e21adbe562495873193b6a2825839a7b71d151e18f0cc"
+dependencies = [
+ "directories 4.0.1",
+]
+
+[[package]]
 name = "eframe"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1987,6 +1996,7 @@ dependencies = [
  "confy",
  "csv",
  "directories 4.0.1",
+ "duckstore",
  "eframe",
  "execute",
  "regex",

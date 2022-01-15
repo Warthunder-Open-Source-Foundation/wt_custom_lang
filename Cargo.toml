@@ -30,6 +30,7 @@ execute = "^0.2.9"
 sysinfo = "^0.22.5"
 directories = "^4.0.1"
 chrono = "^0.4.19"
+duckstore = "^0.1.0"
 
 #notify-rust = "4.5.5"
 
