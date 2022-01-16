@@ -56,27 +56,40 @@ impl App for CustomLang {
 		CentralPanel::default().show(ctx, |ui| {
 			ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
 				ui.horizontal(|ui| {
-					if ui.add(Button::new("Add new entry")).clicked() {
-						self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+					{
+						if ui.add(Button::new("Add new entry")).clicked() {
+							self.prompt_for_entry.add_csv_entry = Some(("".to_owned(), "".to_owned()));
+						}
 					}
 
-					let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
-					let lang_toggle_text: RichText = if lang_enabled {
-						RichText::new("Global custom lang on").color(Color32::from_rgb(0, 255, 0))
-					} else {
-						RichText::new("Global custom lang off").color(Color32::from_rgb(255, 0, 0))
-					};
-					if ui.add(Button::new(lang_toggle_text)).clicked() {
-						let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
-						let file = fs::read_to_string(&path).unwrap();
+					{
+						let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
+						let lang_toggle_text: RichText = if lang_enabled {
+							RichText::new("Global custom lang on").color(Color32::from_rgb(0, 255, 0))
+						} else {
+							RichText::new("Global custom lang off").color(Color32::from_rgb(255, 0, 0))
+						};
+						if ui.add(Button::new(lang_toggle_text)).clicked() {
+							let path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
+							let file = fs::read_to_string(&path).unwrap();
 
-						const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
-						let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
+							const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
+							let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
 
-						if fs::write(&path, file).is_ok() {
-							self.config.enable_lang = self.config.is_lang_enabled().unwrap();
-							confy::store(CONFIG_NAME, &self.config).unwrap();
+							if fs::write(&path, file).is_ok() {
+								self.config.enable_lang = self.config.is_lang_enabled().unwrap();
+								confy::store(CONFIG_NAME, &self.config).unwrap();
+							}
+						}
+					}
 
+					{
+						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
+							let conf: Configuration = confy::load(CONFIG_NAME).unwrap();
+
+							let entries: Vec<PrimitiveEntry> = serde_json::from_str(&conf.primitive_entries).unwrap();
+
+							PrimitiveEntry::replace_all_entries_direct_str(entries, &self.config.wt_path.as_ref().unwrap(), true);
 						}
 					}
 				});

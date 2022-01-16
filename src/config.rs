@@ -38,9 +38,9 @@ impl Default for Configuration {
 }
 
 impl Configuration {
-	pub fn is_set_up(&self) -> bool {
-		return self.is_wt_path_valid() && self.is_blk_setup() && self.is_lang_folder_created();
-	}
+	// pub fn is_set_up(&self) -> bool {
+	// 	return self.is_wt_path_valid() && self.is_blk_setup() && self.is_lang_folder_created();
+	// }
 	pub fn is_wt_path_valid(&self) -> bool {
 		if let Some(path) = &self.wt_path {
 			if fs::read(&format!("{}/config.blk", path)).is_ok() {
