@@ -1,16 +1,14 @@
-#![windows_subsystem="windows"]
+#![windows_subsystem = "windows"]
 
 use std::{fs, panic};
-use std::process::exit;
-use std::thread::sleep;
-use std::time::Duration;
+use duckstore::{DirType, PathConfig, ResolvedPaths};
 
 use eframe::{NativeOptions, run_native};
 use eframe::egui::Vec2;
-use execute::{command, Execute};
-use sysinfo::{System, SystemExt};
+use lazy_static::lazy_static;
 
 use app::custom_lang::CustomLang;
+use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 mod config;
 mod lang_manipulation;
@@ -20,9 +18,36 @@ const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_
 
 const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
 
+const LANG_ENTRIES: PathConfig = PathConfig {
+	project_prefix: CONFIG_NAME,
+	sub_folder: "lang",
+	file_name: "entries.bin",
+	dir_type: &DirType::Data,
+};
+
+lazy_static! {
+ static ref LANG_PATH: ResolvedPaths<'static> = {
+		match LANG_ENTRIES.resolve() {
+			Ok(x) => x,
+			// Unsafe unwrap as this error cannot be recovered at runtime
+			Err(err) => panic!("{err}"),
+		}
+    };
+}
+
+const READ_PRIMITIVE: fn() -> Vec<PrimitiveEntry> = || {
+	let bin = fs::read_to_string(&LANG_PATH.constructed_path).unwrap();
+	serde_json::from_str(&bin).unwrap()
+};
+
+const WRITE_PRIMITIVE: fn(&Vec<PrimitiveEntry>) = |x: &Vec<PrimitiveEntry>|{
+	let bin = serde_json::to_string(x).unwrap();
+	fs::write(&LANG_PATH.constructed_path, &bin).unwrap();
+};
+
 pub fn main() {
 	#[cfg(not(debug_assertions))]
-	panic::set_hook(Box::new(|panic_info| {
+		panic::set_hook(Box::new(|panic_info| {
 		println!("{}", panic_info);
 		let dir = directories::BaseDirs::new().unwrap();
 		let data_dir = dir.data_dir().to_str().unwrap();
@@ -41,6 +66,10 @@ pub fn main() {
 			}
 		}
 	}));
+
+	if fs::read(&LANG_PATH.constructed_path).is_err() {
+		fs::write(&LANG_PATH.constructed_path, b"[]").unwrap();
+	}
 
 	let app = CustomLang::new();
 

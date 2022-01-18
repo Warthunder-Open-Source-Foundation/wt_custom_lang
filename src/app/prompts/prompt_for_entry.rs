@@ -1,13 +1,8 @@
-use std::{fs, thread};
-use std::process::Command;
+use std::{fs};
 
 use eframe::egui::{Button, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
-use eframe::egui::Label;
-use eframe::egui::style::Selection;
-use execute::Execute;
-use rfd::FileDialog;
 
-use crate::CustomLang;
+use crate::{CustomLang, LANG_PATH, READ_PRIMITIVE, WRITE_PRIMITIVE};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 pub struct PromptForEntry {
@@ -84,9 +79,11 @@ impl CustomLang {
 					PrimitiveEntry::replace_all_entries_from_file_str(vec![entry.clone()], &mut file, true);
 
 					if fs::write(&path, file).is_ok() {
-						let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+						let mut old = READ_PRIMITIVE();
+
 						old.push(entry);
-						self.config.primitive_entries = serde_json::to_string(&old).unwrap();
+
+						WRITE_PRIMITIVE(&old);
 					}
 					self.prompt_for_entry.add_csv_entry = None;
 				}
@@ -96,6 +93,7 @@ impl CustomLang {
 			});
 		});
 	}
+
 	pub fn undo_entry(&mut self, i: usize, primitive_entry: &PrimitiveEntry) {
 		let lang_type = self.prompt_for_entry.toggle_dropdown.to_file_name();
 		let path: String = format!("{}/lang/{}.csv", self.config.wt_path.as_ref().unwrap(), lang_type);
@@ -112,9 +110,13 @@ impl CustomLang {
 		PrimitiveEntry::replace_all_entries_from_file_str(vec![entry.clone()], &mut file, true);
 
 		if fs::write(&path, file).is_ok() {
-			let mut old: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+			let entries = fs::read(&LANG_PATH.constructed_path).unwrap();
+
+			let mut old: Vec<PrimitiveEntry> = serde_json::from_slice(&entries).unwrap();
+
 			old.remove(i);
-			self.config.primitive_entries = serde_json::to_string(&old).unwrap();
+
+			WRITE_PRIMITIVE(&old);
 		}
 	}
 }

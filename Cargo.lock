@@ -511,9 +511,9 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
 name = "duckstore"
-version = "0.1.1"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99986b51e13cbe32cf0e21adbe562495873193b6a2825839a7b71d151e18f0cc"
+checksum = "7f878e56b0d05dd70c999775c1b0cff761f843e52f7c97a43ee320853ebdd680"
 dependencies = [
  "directories 4.0.1",
 ]
@@ -1999,6 +1999,7 @@ dependencies = [
  "duckstore",
  "eframe",
  "execute",
+ "lazy_static",
  "regex",
  "rfd",
  "serde",

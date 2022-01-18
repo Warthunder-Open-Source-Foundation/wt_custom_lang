@@ -11,6 +11,7 @@ pub struct PrimitiveEntry {
 }
 
 impl PrimitiveEntry {
+	#[allow(dead_code)]
 	pub fn replace_all_entries_from_file_re(entries: Vec<Self>, file: &mut String) {
 		let regex_bounds = (r#"""#, r#"""#);
 		for entry in entries {
@@ -29,7 +30,7 @@ impl PrimitiveEntry {
 			}
 		}
 	}
-	pub fn replace_all_entries_direct_str(entries: Vec<Self>, wt_path: &str, whole_word: bool) {
+	pub fn replace_all_entries_direct_str(entries: &[Self], wt_path: &str, whole_word: bool) {
 		let string_to_path = | x: &str |  format!("{}/lang/{}.csv", wt_path, x);
 		let file_to_string = | x: &str | fs::read_to_string(string_to_path(x)).unwrap();
 
@@ -72,7 +73,6 @@ impl PrimitiveEntry {
 }
 
 mod tests {
-	use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 
 	#[test]
 	fn regex_confirm() {

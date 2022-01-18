@@ -2,19 +2,10 @@ use std::fs;
 
 use serde::{Deserialize, Serialize};
 
-use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Configuration {
 	pub dark_mode: bool,
 	pub enable_lang: bool,
-
-	/// Lang specific items
-
-	// pub primitive_entries: Vec<PrimitiveEntry>,
-	// Currently a string as the toml crate cannot parse named arrays
-	// Yes it creates significant runtime overhead and code verbosity but this needs to wait until the local cache is implemented
-	pub primitive_entries: String,
 
 	/// WT specific items
 	pub wt_path: Option<String>,
@@ -28,7 +19,6 @@ impl Default for Configuration {
 		Self {
 			dark_mode: true,
 			enable_lang: true,
-			primitive_entries: "[]".to_string(),
 			wt_path: None,
 			blk_set: false,
 			lang_folder_created: false,

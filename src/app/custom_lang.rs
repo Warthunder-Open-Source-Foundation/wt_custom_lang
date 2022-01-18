@@ -10,7 +10,7 @@ use eframe::epi::{App, Frame, Storage};
 use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::{CONFIG_NAME, REPO_URL};
+use crate::{CONFIG_NAME, READ_PRIMITIVE, REPO_URL, WRITE_PRIMITIVE};
 
 pub struct CustomLang {
 	pub config: Configuration,
@@ -85,17 +85,18 @@ impl App for CustomLang {
 
 					{
 						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-							let conf: Configuration = confy::load(CONFIG_NAME).unwrap();
+							let entries = READ_PRIMITIVE();
 
-							let entries: Vec<PrimitiveEntry> = serde_json::from_str(&conf.primitive_entries).unwrap();
+							PrimitiveEntry::replace_all_entries_direct_str(&entries, &self.config.wt_path.as_ref().unwrap(), true);
 
-							PrimitiveEntry::replace_all_entries_direct_str(entries, &self.config.wt_path.as_ref().unwrap(), true);
+							WRITE_PRIMITIVE(&entries);
 						}
 					}
 				});
 
 				ui.add_space(15.0);
-				let prim_array: Vec<PrimitiveEntry> = serde_json::from_str(&self.config.primitive_entries).unwrap();
+				let prim_array = READ_PRIMITIVE();
+
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
 					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
