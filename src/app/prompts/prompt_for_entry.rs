@@ -2,8 +2,9 @@ use std::{fs};
 
 use eframe::egui::{Button, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
 
-use crate::{CustomLang, LANG_PATH, READ_PRIMITIVE, WRITE_PRIMITIVE};
+use crate::{CustomLang};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
+use crate::local_storage::entries::{LANG_PATH, READ_PRIMITIVE, WRITE_PRIMITIVE};
 
 pub struct PromptForEntry {
 	pub add_csv_entry: Option<(String, String)>,
@@ -79,7 +80,7 @@ impl CustomLang {
 					PrimitiveEntry::replace_all_entries_from_file_str(vec![entry.clone()], &mut file, true);
 
 					if fs::write(&path, file).is_ok() {
-						let mut old = READ_PRIMITIVE();
+						let mut old = READ_PRIMITIVE(&LANG_PATH.constructed_path);
 
 						old.push(entry);
 
