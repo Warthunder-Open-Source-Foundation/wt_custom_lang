@@ -97,6 +97,7 @@ impl CustomLang {
 			}
 		});
 	}
+	#[cfg(windows)]
 	pub fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
 		Window::new("Setting lang folder permissions").show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
