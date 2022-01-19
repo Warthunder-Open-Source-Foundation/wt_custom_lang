@@ -11,7 +11,7 @@ use crate::local_storage::entries::LANG_PATH;
 
 mod config;
 mod lang_manipulation;
-mod app;
+pub mod app;
 pub mod local_storage;
 
 const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master";
@@ -39,6 +39,8 @@ pub fn main() {
 			}
 		}
 	}));
+
+	lazy_static::initialize(&LANG_PATH);
 
 	if fs::read(&LANG_PATH.constructed_path).is_err() {
 		fs::write(&LANG_PATH.constructed_path, b"[]").unwrap();

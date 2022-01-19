@@ -10,7 +10,7 @@ use rfd::FileDialog;
 use crate::{CustomLang, REPO_URL};
 
 impl CustomLang {
-	pub(crate) fn prompt_for_status(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_status(&mut self, ctx: &CtxRef) {
 		Window::new("Config status").show(ctx, |ui| {
 			if self.config.is_wt_path_valid() {
 				ui.add(Label::new(RichText::new(format!("WT path is defined and working ✅")).color(Color32::from_rgb(0, 255, 0))));
@@ -48,7 +48,7 @@ impl CustomLang {
 			}
 		});
 	}
-	pub(crate) fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
 		Window::new("Configuring the config.blk file").show(ctx, |ui| {
 			let blk_path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
 			let config_blk = fs::read_to_string(&blk_path).unwrap();
@@ -71,7 +71,7 @@ impl CustomLang {
 			}
 		});
 	}
-	pub(crate) fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
 		Window::new("Steps for generating the lang folder").show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Launch game").text_style(TextStyle::Heading))).clicked() {
 				// Cloning as the thread consumes the String entirely

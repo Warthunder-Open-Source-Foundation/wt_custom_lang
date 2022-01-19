@@ -34,6 +34,7 @@ directories = "^4.0.1"
 chrono = "^0.4.19"
 duckstore = "^2.1.0"
 lazy_static = "1.4.0"
+fs_extra = "1.2.0"
 
 #notify-rust = "4.5.5"
 

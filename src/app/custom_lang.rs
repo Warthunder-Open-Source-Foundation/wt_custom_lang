@@ -16,6 +16,7 @@ use crate::{CONFIG_NAME, REPO_URL};
 pub struct CustomLang {
 	pub config: Configuration,
 	pub status_menu: bool,
+	pub prompt_for_backup: bool,
 	pub prompt_for_entry: PromptForEntry,
 }
 
@@ -44,6 +45,10 @@ impl App for CustomLang {
 			}
 			_ if self.prompt_for_entry.add_csv_entry.is_some() => {
 				self.prompt_for_entry(ctx);
+				confy::store(CONFIG_NAME, &self.config).unwrap();
+			}
+			_ if self.prompt_for_backup => {
+				self.prompt_for_backup(ctx);
 				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
 			#[cfg(windows)]
@@ -93,18 +98,27 @@ impl App for CustomLang {
 							WRITE_PRIMITIVE(&entries);
 						}
 					}
+
+					{
+						if ui.add(Button::new("Backups")).clicked() {
+							self.prompt_for_backup = true;
+						}
+					}
 				});
 
-				ui.add_space(15.0);
+				ui.add_space(5.0);
+
+
 				let prim_array = READ_PRIMITIVE();
 
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
-					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
-					if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
-						self.undo_entry(i, primitive_entry);
-						confy::store(CONFIG_NAME, &self.config).unwrap();
-					}
-					ui.add_space(5.0);
+					ui.horizontal(|ui| {
+						ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
+						if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
+							self.undo_entry(i, primitive_entry);
+							confy::store(CONFIG_NAME, &self.config).unwrap();
+						}
+					});
 				}
 			});
 			render_footer(ctx);
@@ -165,6 +179,7 @@ impl CustomLang {
 		let config: Configuration = confy::load(CONFIG_NAME).unwrap_or_default();
 		Self {
 			config,
+			prompt_for_backup: false,
 			status_menu: false,
 			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: LangType::default() },
 		}
