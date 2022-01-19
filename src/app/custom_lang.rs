@@ -10,7 +10,7 @@ use eframe::epi::{App, Frame, Storage};
 use crate::app::prompts::prompt_for_entry::{LangType, PromptForEntry};
 use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::local_storage::entries::{LANG_PATH, READ_PRIMITIVE, WRITE_PRIMITIVE};
+use crate::local_storage::entries::{READ_PRIMITIVE, WRITE_PRIMITIVE};
 use crate::{CONFIG_NAME, REPO_URL};
 
 pub struct CustomLang {
@@ -86,7 +86,7 @@ impl App for CustomLang {
 
 					{
 						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-							let entries = READ_PRIMITIVE(&LANG_PATH.constructed_path);
+							let entries = READ_PRIMITIVE();
 
 							PrimitiveEntry::replace_all_entries_direct_str(&entries, &self.config.wt_path.as_ref().unwrap(), true);
 
@@ -96,7 +96,7 @@ impl App for CustomLang {
 				});
 
 				ui.add_space(15.0);
-				let prim_array = READ_PRIMITIVE(&LANG_PATH.constructed_path);
+				let prim_array = READ_PRIMITIVE();
 
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
 					ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));

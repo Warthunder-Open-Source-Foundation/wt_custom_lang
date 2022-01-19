@@ -80,7 +80,7 @@ impl CustomLang {
 					PrimitiveEntry::replace_all_entries_from_file_str(vec![entry.clone()], &mut file, true);
 
 					if fs::write(&path, file).is_ok() {
-						let mut old = READ_PRIMITIVE(&LANG_PATH.constructed_path);
+						let mut old = READ_PRIMITIVE();
 
 						old.push(entry);
 

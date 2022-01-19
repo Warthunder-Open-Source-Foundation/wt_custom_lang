@@ -22,12 +22,12 @@ lazy_static! {
     };
 }
 
-pub const READ_PRIMITIVE: fn(&str) -> Vec<PrimitiveEntry> = |x: &str| {
-	let bin = fs::read_to_string(x).unwrap();
+pub const READ_PRIMITIVE: fn() -> Vec<PrimitiveEntry> = || {
+	let bin = fs::read_to_string(&LANG_PATH.constructed_path).unwrap();
 	serde_json::from_str(&bin).unwrap()
 };
 
 pub const WRITE_PRIMITIVE: fn(&Vec<PrimitiveEntry>) = |x: &Vec<PrimitiveEntry>|{
 	let bin = serde_json::to_string(x).unwrap();
-	fs::write("", &bin).unwrap();
+	fs::write(&LANG_PATH.constructed_path, &bin).unwrap();
 };
