@@ -20,7 +20,7 @@ const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely ne
 
 pub fn main() {
 	#[cfg(not(debug_assertions))]
-		panic::set_hook(Box::new(|panic_info| {
+		std::panic::set_hook(Box::new(|panic_info| {
 		println!("{}", panic_info);
 		let dir = directories::BaseDirs::new().unwrap();
 		let data_dir = dir.data_dir().to_str().unwrap();
