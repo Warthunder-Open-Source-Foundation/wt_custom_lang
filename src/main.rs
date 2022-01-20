@@ -6,6 +6,7 @@ use eframe::{NativeOptions, run_native};
 use eframe::egui::Vec2;
 
 use app::custom_lang::CustomLang;
+use crate::app::prompts::prompt_for_backup::BACKUP_ENTRY_STORAGE;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::local_storage::entries::LANG_PATH;
 
@@ -44,6 +45,10 @@ pub fn main() {
 
 	if fs::read(&LANG_PATH.constructed_path).is_err() {
 		fs::write(&LANG_PATH.constructed_path, b"[]").unwrap();
+	}
+
+	if fs::read(&BACKUP_ENTRY_STORAGE()).is_err() {
+		fs::write(&BACKUP_ENTRY_STORAGE(), b"[]").unwrap();
 	}
 
 	let app = CustomLang::new();
