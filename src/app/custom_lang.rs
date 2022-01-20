@@ -12,11 +12,12 @@ use crate::config::Configuration;
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::local_storage::entries::{READ_PRIMITIVE, WRITE_PRIMITIVE};
 use crate::{CONFIG_NAME, REPO_URL};
+use crate::app::prompts::prompt_for_backup::PromptForBackup;
 
 pub struct CustomLang {
 	pub config: Configuration,
 	pub status_menu: bool,
-	pub prompt_for_backup: bool,
+	pub prompt_for_backup: PromptForBackup,
 	pub prompt_for_entry: PromptForEntry,
 }
 
@@ -47,7 +48,7 @@ impl App for CustomLang {
 				self.prompt_for_entry(ctx);
 				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
-			_ if self.prompt_for_backup => {
+			_ if self.prompt_for_backup.active => {
 				self.prompt_for_backup(ctx);
 				confy::store(CONFIG_NAME, &self.config).unwrap();
 			}
@@ -101,7 +102,7 @@ impl App for CustomLang {
 
 					{
 						if ui.add(Button::new("Backups")).clicked() {
-							self.prompt_for_backup = true;
+							self.prompt_for_backup.active = true;
 						}
 					}
 				});
@@ -179,8 +180,8 @@ impl CustomLang {
 		let config: Configuration = confy::load(CONFIG_NAME).unwrap_or_default();
 		Self {
 			config,
-			prompt_for_backup: false,
 			status_menu: false,
+			prompt_for_backup: PromptForBackup { active: false, backup_name: "".to_owned() },
 			prompt_for_entry: PromptForEntry { add_csv_entry: None, toggle_dropdown: LangType::default() },
 		}
 	}

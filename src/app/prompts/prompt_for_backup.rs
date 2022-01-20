@@ -1,14 +1,21 @@
 use std::fs;
 use std::ops::Deref;
 use chrono::{NaiveDateTime, TimeZone};
-use eframe::egui::{Button, Color32, CtxRef, Label, RichText, Window};
+use eframe::egui::{Button, Color32, CtxRef, InputState, Label, RichText, TextEdit, Window};
 use fs_extra::dir::CopyOptions;
 use serde::{Deserialize, Serialize};
 use crate::{CustomLang, LANG_PATH};
 use crate::local_storage::backup::{BACKUP_PATH, BACKUP_ROOT};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PromptForBackup {
+	pub active: bool,
+	pub backup_name: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BackupEntry {
+	pub name: String,
 	pub dest: String,
 	pub date: i64,
 }
@@ -26,7 +33,7 @@ const COPY_OPTIONS: CopyOptions = CopyOptions {
 	depth: 0
 };
 
-fn create_backup(wt_folder: &str) {
+fn create_backup(wt_folder: &str, name: &str) {
 	let bin = fs::read_to_string(&BACKUP_ENTRY_STORAGE()).unwrap();
 	let mut backups: Vec<BackupEntry> = serde_json::from_str(&bin).unwrap();
 
@@ -37,6 +44,7 @@ fn create_backup(wt_folder: &str) {
 	fs_extra::dir::copy(wt_folder, &path, &COPY_OPTIONS).unwrap();
 
 	backups.push(BackupEntry {
+		name: name.to_owned(),
 		dest: path.clone(),
 		date: time.timestamp(),
 	});
@@ -52,12 +60,9 @@ impl CustomLang {
 	pub fn prompt_for_backup(&mut self, ctx: &CtxRef) {
 		Window::new("Manage backups").show(ctx, |ui| {
 			ui.horizontal(|ui|{
+				ui.add(TextEdit::singleline(&mut self.prompt_for_backup.backup_name));
 				if ui.add(Button::new("Create backup")).clicked() {
-					create_backup(&format!("{}/lang", &self.config.wt_path.as_ref().unwrap()));
-				}
-
-				if ui.add(Button::new("Close")).clicked() {
-					self.prompt_for_backup = false;
+					create_backup(&format!("{}/lang", &self.config.wt_path.as_ref().unwrap()), &self.prompt_for_backup.backup_name);
 				}
 			});
 
@@ -69,7 +74,7 @@ impl CustomLang {
 			for (i, backup) in backups.clone().iter().enumerate() {
 				ui.horizontal(|ui|{
 					let time = NaiveDateTime::from_timestamp(backup.date, 0).to_string();
-					ui.add(Label::new(format!("Created: {:?}", time)));
+					ui.add(Label::new(format!("Name: {} Created: {:?}", &backup.name ,time)));
 					if ui.add(Button::new("Load")).clicked() {
 						load_backup(&format!("{}/lang", &self.config.wt_path.as_ref().unwrap()), &backup.dest);
 					}
@@ -78,6 +83,12 @@ impl CustomLang {
 						backups.remove(i);
 					}
 				});
+			}
+
+			ui.add_space(15.0);
+
+			if ui.add(Button::new("Close")).clicked() {
+				self.prompt_for_backup.active = false;
 			}
 
 			let bin = serde_json::to_string(&backups).unwrap();
