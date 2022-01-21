@@ -1,6 +1,7 @@
 use std::fs;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use crate::CustomLang;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrimitiveEntry {
@@ -11,14 +12,14 @@ pub struct PrimitiveEntry {
 }
 
 impl PrimitiveEntry {
-	#[allow(dead_code)]
-	pub fn replace_all_entries_from_file_re(entries: Vec<Self>, file: &mut String) {
-		let regex_bounds = (r#"""#, r#"""#);
-		for entry in entries {
-			let re = Regex::new(&format!("{}{}{}", regex_bounds.0, entry.original_english, regex_bounds.1)).unwrap();
-			*file = re.replace_all(&file, format!("\"{}\"", &entry.new_english)).to_string();
-		}
-	}
+	// #[allow(dead_code)]
+	// pub fn replace_all_entries_from_file_re(entries: Vec<Self>, file: &mut String) {
+	// 	let regex_bounds = (r#"""#, r#"""#);
+	// 	for entry in entries {
+	// 		let re = Regex::new(&format!("{}{}{}", regex_bounds.0, entry.original_english, regex_bounds.1)).unwrap();
+	// 		*file = re.replace_all(&file, format!("\"{}\"", &entry.new_english)).to_string();
+	// 	}
+	// }
 	pub fn replace_all_entries_from_file_str(entries: Vec<Self>, file: &mut String, whole_word: bool) {
 		if whole_word {
 			for entry in entries {
@@ -30,14 +31,18 @@ impl PrimitiveEntry {
 			}
 		}
 	}
-	pub fn replace_all_entries_direct_str(entries: &[Self], wt_path: &str, whole_word: bool) {
-		let string_to_path = | x: &str |  format!("{}/lang/{}.csv", wt_path, x);
-		let file_to_string = | x: &str | fs::read_to_string(string_to_path(x)).unwrap();
+	pub fn replace_all_entries_direct_str(custom_lang: &mut CustomLang, entries: &[Self], wt_path: &str, whole_word: bool) {
+		let string_to_path = |x: &str| format!("{}/lang/{}.csv", wt_path, x);
 
-		let mut units = file_to_string("units");
-		let mut ui = file_to_string("ui");
-		let mut common_languages = file_to_string("_common_languages");
-		let mut menu = file_to_string("menu");
+
+		let mut units = file_to_string(custom_lang, "units");
+		let mut ui = file_to_string(custom_lang, "ui");
+		let mut common_languages = file_to_string(custom_lang, "_common_languages");
+		let mut menu = file_to_string(custom_lang, "menu");
+
+		if custom_lang.prompt_error.err_value.is_some() {
+			return;
+		}
 
 		let format = if whole_word {
 			|x: &str| format!("\"{}\"", x)
@@ -59,21 +64,52 @@ impl PrimitiveEntry {
 					menu = menu.replace(&format(&entry.new_english), &format(&entry.original_english));
 				}
 				_ => {
-					let mut file = file_to_string(&entry.file);
+					let mut file = file_to_string(custom_lang, &entry.file);
 					file = file.replace(&format(&entry.new_english), &format(&entry.original_english));
-					fs::write(string_to_path(&entry.file), file).unwrap();
+					if let Err(error) = fs::write(string_to_path(&entry.file), file) {
+						custom_lang.prompt_error.err_value = Some(error.to_string());
+					}
 				}
 			}
 		}
-		fs::write(string_to_path("units"), units).unwrap();
-		fs::write(string_to_path("ui"), ui).unwrap();
-		fs::write(string_to_path("_common_languages"), common_languages).unwrap();
-		fs::write(string_to_path("menu"), menu).unwrap();
+		string_to_file(custom_lang, &string_to_path("units"), &units);
+		string_to_file(custom_lang, &string_to_path("ui"), &ui);
+		string_to_file(custom_lang, &string_to_path("_common_languages"), &common_languages);
+		string_to_file(custom_lang, &string_to_path("menu"), &menu);
 	}
 }
 
-mod tests {
+fn string_to_file(custom_lang: &mut CustomLang, path: &str, file: &str) {
+	match serde_json::to_string(file) {
+		Ok(bin) => {
+			match fs::write(path, bin) {
+				Ok(_) => {}
+				Err(error) => {
+					custom_lang.prompt_error.err_value = Some(error.to_string());
+					return;
+				}
+			}
+		}
+		Err(error) => {
+			custom_lang.prompt_error.err_value = Some(error.to_string());
+			return;
+		}
+	}
+}
 
+fn file_to_string(custom_lang: &mut CustomLang, path: &str) -> String {
+	let string_to_path = |x: &str| format!("{}/lang/{}.csv", path, x);
+
+	return match fs::read_to_string(string_to_path(path)) {
+		Ok(value) => { value }
+		Err(error) => {
+			custom_lang.prompt_error.err_value = Some(error.to_string());
+			"".to_owned()
+		}
+	};
+}
+
+mod tests {
 	#[test]
 	fn regex_confirm() {
 		let entries = vec![PrimitiveEntry {

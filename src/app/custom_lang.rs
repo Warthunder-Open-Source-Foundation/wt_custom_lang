@@ -120,10 +120,10 @@ impl App for CustomLang {
 
 						{
 							if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-								if let Some(path) = &self.config.wt_path.as_ref() {
+								if let Some(path) = &self.config.wt_path.clone().as_ref() {
 									let entries = READ_PRIMITIVE();
 
-									PrimitiveEntry::replace_all_entries_direct_str(&entries, path, true);
+									PrimitiveEntry::replace_all_entries_direct_str(self, &entries, path, true);
 
 									WRITE_PRIMITIVE(&entries);
 								} else {
