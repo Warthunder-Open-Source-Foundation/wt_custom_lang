@@ -34,10 +34,10 @@ impl PrimitiveEntry {
 	pub fn replace_all_entries_direct_str(custom_lang: &mut CustomLang, entries: &[Self], wt_path: &str, whole_word: bool) {
 		let string_to_path = |x: &str| format!("{}/lang/{}.csv", wt_path, x);
 
-		let mut units = file_to_string(custom_lang, "units");
-		let mut ui = file_to_string(custom_lang, "ui");
-		let mut common_languages = file_to_string(custom_lang, "_common_languages");
-		let mut menu = file_to_string(custom_lang, "menu");
+		let mut units = file_to_string(custom_lang, wt_path, "units");
+		let mut ui = file_to_string(custom_lang, wt_path, "ui");
+		let mut common_languages = file_to_string(custom_lang, wt_path, "_common_languages");
+		let mut menu = file_to_string(custom_lang, wt_path, "menu");
 
 		if custom_lang.prompt_error.err_value.is_some() {
 			return;
@@ -63,10 +63,10 @@ impl PrimitiveEntry {
 					menu = menu.replace(&format(&entry.new_english), &format(&entry.original_english));
 				}
 				_ => {
-					let mut file = file_to_string(custom_lang, &entry.file);
+					let mut file = file_to_string(custom_lang, wt_path, &entry.file);
 					file = file.replace(&format(&entry.new_english), &format(&entry.original_english));
 					if let Err(error) = fs::write(string_to_path(&entry.file), file) {
-						custom_lang.prompt_error.err_value = Some(error.to_string());
+						custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					}
 				}
 			}
@@ -84,25 +84,25 @@ fn string_to_file(custom_lang: &mut CustomLang, path: &str, file: &str) {
 			match fs::write(path, bin) {
 				Ok(_) => {}
 				Err(error) => {
-					custom_lang.prompt_error.err_value = Some(error.to_string());
+					custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					return;
 				}
 			}
 		}
 		Err(error) => {
-			custom_lang.prompt_error.err_value = Some(error.to_string());
+			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 			return;
 		}
 	}
 }
 
-fn file_to_string(custom_lang: &mut CustomLang, path: &str) -> String {
-	let string_to_path = |x: &str| format!("{}/lang/{}.csv", path, x);
+fn file_to_string(custom_lang: &mut CustomLang, wt_path: &str, file_name: &str) -> String {
+	let string_to_path = || format!("{}/lang/{}.csv", wt_path, file_name);
 
-	return match fs::read_to_string(string_to_path(path)) {
+	return match fs::read_to_string(string_to_path()) {
 		Ok(value) => { value }
 		Err(error) => {
-			custom_lang.prompt_error.err_value = Some(error.to_string());
+			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 			"".to_owned()
 		}
 	};

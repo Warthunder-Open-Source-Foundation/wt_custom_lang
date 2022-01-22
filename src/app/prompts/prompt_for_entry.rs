@@ -95,7 +95,7 @@ impl CustomLang {
 								self.prompt_for_entry.before_after_entry = EMPTY_BEFORE_AFTER();
 							}
 							Err(error) => {
-								self.prompt_error.err_value = Some(error.to_string());
+								self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 								return;
 							}
 						}
@@ -134,13 +134,13 @@ impl CustomLang {
 										WRITE_PRIMITIVE(&old);
 									}
 									Err(error) => {
-										self.prompt_error.err_value = Some(error.to_string());
+										self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 										return;
 									}
 								}
 							}
 							Err(error) => {
-								self.prompt_error.err_value = Some(error.to_string());
+								self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 								return;
 							}
 						}
@@ -148,7 +148,7 @@ impl CustomLang {
 					}
 				},
 				Err(error) => {
-					self.prompt_error.err_value = Some(error.to_string());
+					self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					return;
 				}
 			}

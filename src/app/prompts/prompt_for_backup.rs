@@ -30,12 +30,12 @@ pub const WRITE_BACKUP: fn(&mut CustomLang, &Vec<BackupEntry>) = |custom_lang, b
 			match fs::write(&BACKUP_ENTRY_STORAGE(), bin) {
 				Ok(_) => {}
 				Err(error) => {
-					custom_lang.prompt_error.err_value = Some(error.to_string());
+					custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 				}
 			}
 		}
 		Err(error) => {
-			custom_lang.prompt_error.err_value = Some(error.to_string());
+			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 		}
 	}
 };
@@ -48,13 +48,13 @@ pub const READ_BACKUP: fn(&mut CustomLang) -> Option<Vec<BackupEntry>> = |custom
 					Some(serialized)
 				}
 				Err(error) => {
-					custom_lang.prompt_error.err_value = Some(error.to_string());
+					custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					None
 				}
 			}
 		}
 		Err(error) => {
-			custom_lang.prompt_error.err_value = Some(error.to_string());
+			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 			None
 		}
 	}
@@ -94,13 +94,13 @@ impl CustomLang {
 							}
 						}
 						Err(error) => {
-							self.prompt_error.err_value = Some(error.to_string());
+							self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 							return;
 						}
 					}
 				}
 				Err(error) => {
-					self.prompt_error.err_value = Some(error.to_string());
+					self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					return;
 				}
 			}
@@ -131,7 +131,7 @@ impl CustomLang {
 								match fs_extra::dir::copy(&wt_path, &backup.dest, &COPY_OPTIONS) {
 									Ok(_) => {},
 									Err(error) => {
-										self.prompt_error.err_value = Some(error.to_string());
+										self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 										return;
 									}
 								}
