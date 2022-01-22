@@ -11,7 +11,7 @@ use crate::{CustomLang, REPO_URL};
 
 impl CustomLang {
 	pub fn prompt_for_status(&mut self, ctx: &CtxRef) {
-		Window::new("Config status").show(ctx, |ui| {
+		Window::new("Config status").auto_sized().show(ctx, |ui| {
 			if self.config.is_wt_path_valid() {
 				ui.add(Label::new(RichText::new(format!("WT path is defined and working ✅")).color(Color32::from_rgb(0, 255, 0))));
 			}
@@ -31,7 +31,7 @@ impl CustomLang {
 		});
 	}
 	pub(crate) fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
-		Window::new("First time setup").show(ctx, |ui| {
+		Window::new("First time setup").auto_sized().show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
 			ui.add(Hyperlink::from_label_and_url("Where the game might be installed", format!("{}/guide/install_folder.md", REPO_URL)));
@@ -54,7 +54,7 @@ impl CustomLang {
 		});
 	}
 	pub fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
-		Window::new("Configuring the config.blk file").show(ctx, |ui| {
+		Window::new("Configuring the config.blk file").auto_sized().show(ctx, |ui| {
 			if let Some(wt_path) = self.config.wt_path.as_ref() {
 				let blk_path = format!("{}/config.blk", wt_path);
 				match fs::read_to_string(&blk_path) {
@@ -90,7 +90,7 @@ impl CustomLang {
 		});
 	}
 	pub fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
-		Window::new("Steps for generating the lang folder").show(ctx, |ui| {
+		Window::new("Steps for generating the lang folder").auto_sized().show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Launch game").text_style(TextStyle::Heading))).clicked() {
 				// Cloning as the thread consumes the String entirely
 				if let Some(path) = self.config.wt_path.as_ref() {
