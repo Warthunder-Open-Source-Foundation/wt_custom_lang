@@ -1,6 +1,7 @@
 use std::fs;
 
 use serde::{Deserialize, Serialize};
+
 use crate::CustomLang;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -34,6 +35,8 @@ impl PrimitiveEntry {
 	pub fn replace_all_entries_direct_str(custom_lang: &mut CustomLang, entries: &[Self], wt_path: &str, whole_word: bool) {
 		let string_to_path = |x: &str| format!("{}/lang/{}.csv", wt_path, x);
 
+		eprintln!("entries = {:?}", entries);
+
 		let mut units = file_to_string(custom_lang, wt_path, "units");
 		let mut ui = file_to_string(custom_lang, wt_path, "ui");
 		let mut common_languages = file_to_string(custom_lang, wt_path, "_common_languages");
@@ -51,44 +54,37 @@ impl PrimitiveEntry {
 		for entry in entries {
 			match entry.file.as_str() {
 				"units" => {
-					units = units.replace(&format(&entry.new_english), &format(&entry.original_english));
+					units = units.replace(&format(&entry.original_english), &format(&entry.new_english));
 				}
 				"ui" => {
-					ui = ui.replace(&format(&entry.new_english), &format(&entry.original_english));
+					ui = ui.replace(&format(&entry.original_english), &format(&entry.new_english));
 				}
 				"_common_languages" => {
-					common_languages = common_languages.replace(&format(&entry.new_english), &format(&entry.original_english));
+					common_languages = common_languages.replace(&format(&entry.original_english), &format(&entry.new_english));
 				}
 				"menu" => {
-					menu = menu.replace(&format(&entry.new_english), &format(&entry.original_english));
+					menu = menu.replace(&format(&entry.original_english), &format(&entry.new_english));
 				}
 				_ => {
+					panic!("Custom files are currently not implemented");
 					let mut file = file_to_string(custom_lang, wt_path, &entry.file);
-					file = file.replace(&format(&entry.new_english), &format(&entry.original_english));
+					file = file.replace(&format(&entry.original_english), &format(&entry.new_english));
 					if let Err(error) = fs::write(string_to_path(&entry.file), file) {
 						custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					}
 				}
 			}
 		}
-		string_to_file(custom_lang, &string_to_path("units"), &units);
-		string_to_file(custom_lang, &string_to_path("ui"), &ui);
-		string_to_file(custom_lang, &string_to_path("_common_languages"), &common_languages);
-		string_to_file(custom_lang, &string_to_path("menu"), &menu);
+		write_string(custom_lang, &string_to_path("units"), &units);
+		write_string(custom_lang, &string_to_path("ui"), &ui);
+		write_string(custom_lang, &string_to_path("_common_languages"), &common_languages);
+		write_string(custom_lang, &string_to_path("menu"), &menu);
 	}
 }
 
-fn string_to_file(custom_lang: &mut CustomLang, path: &str, file: &str) {
-	match serde_json::to_string(file) {
-		Ok(bin) => {
-			match fs::write(path, bin) {
-				Ok(_) => {}
-				Err(error) => {
-					custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
-					return;
-				}
-			}
-		}
+fn write_string(custom_lang: &mut CustomLang, path: &str, file: &str) {
+	match fs::write(path, file) {
+		Ok(_) => {}
 		Err(error) => {
 			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 			return;
