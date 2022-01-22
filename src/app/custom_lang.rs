@@ -125,7 +125,10 @@ impl App for CustomLang {
 
 									PrimitiveEntry::replace_all_entries_direct_str(self, &entries, path, true);
 
-									WRITE_PRIMITIVE(&entries);
+									if self.prompt_error.err_value.is_none() {
+										WRITE_PRIMITIVE(&entries);
+
+									}
 								} else {
 									self.prompt_error.err_value = Some("WT path should be set, but was none".to_owned());
 									return;

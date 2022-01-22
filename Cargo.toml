@@ -19,6 +19,7 @@ incremental = true
 lto = true
 opt-level = 3
 incremental = true
+debug-assertions = false
 
 [dependencies]
 eframe = "^0.16.0"

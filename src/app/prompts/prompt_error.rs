@@ -14,6 +14,7 @@ impl CustomLang {
 	pub fn prompt_error(&self, ctx: &CtxRef) {
 		Window::new("An error occurred").show(ctx, |ui|{
 			if let Some(error) = self.prompt_error.err_value.as_ref() {
+				println!("{}", error);
 				store_err(&error);
 				ui.add(Label::new(&**error));
 				sleep(Duration::from_secs(10));
