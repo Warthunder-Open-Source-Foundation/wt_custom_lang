@@ -1,6 +1,6 @@
 use std::{fs};
 
-use eframe::egui::{Button, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
+use eframe::egui::{Button, Color32, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
 
 use crate::{CustomLang};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
@@ -54,7 +54,21 @@ impl CustomLang {
 		if let Some(wt_raw) = self.config.wt_path.as_ref() {
 			Window::new("Adding a new entry").show(ctx, |ui| {
 				let mut original = self.prompt_for_entry.before_after_entry.clone();
-				ui.add(TextEdit::singleline(&mut original.0).hint_text("Old name"));
+
+				let mut color= Color32::from_rgb(255,255,255);;
+
+				let mut contains = |file_path: &str|{
+					if fs::read_to_string(format!("{}/lang/{}.csv", wt_raw, file_path)).unwrap_or("".to_owned()).contains(&format!(r#""{}""#, &original.0)) {
+						color = Color32::from_rgb(0,255,0);
+
+					} else {
+						color = Color32::from_rgb(255,255,255);
+					}
+				};
+
+				contains(self.prompt_for_entry.toggle_dropdown.to_file_name());
+
+				ui.add(TextEdit::singleline (&mut original.0).hint_text("Old name").text_color(color));
 				ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
 
 				ui.horizontal(|ui| {
