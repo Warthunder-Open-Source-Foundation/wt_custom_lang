@@ -1,11 +1,13 @@
 use std::fs;
 use std::ops::Deref;
-use chrono::{NaiveDateTime};
+
+use chrono::NaiveDateTime;
 use eframe::egui::{Button, Color32, CtxRef, Label, RichText, TextEdit, Window};
 use fs_extra::dir::CopyOptions;
 use serde::{Deserialize, Serialize};
-use crate::{CustomLang};
-use crate::local_storage::backup::{BACKUP_PATH};
+
+use crate::CustomLang;
+use crate::local_storage::backup::BACKUP_PATH;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PromptForBackup {
@@ -57,7 +59,7 @@ pub const READ_BACKUP: fn(&mut CustomLang) -> Option<Vec<BackupEntry>> = |custom
 			custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 			None
 		}
-	}
+	};
 };
 
 const COPY_OPTIONS: CopyOptions = CopyOptions {
@@ -128,8 +130,8 @@ impl CustomLang {
 							let time = NaiveDateTime::from_timestamp(backup.date, 0).to_string();
 							ui.add(Label::new(format!("Name: {} Created: {:?}", &backup.name, time)));
 							if ui.add(Button::new("Load")).clicked() {
-								match fs_extra::dir::copy(&wt_path, &backup.dest, &COPY_OPTIONS) {
-									Ok(_) => {},
+								match fs_extra::dir::copy(&backup.dest, &wt_path, &COPY_OPTIONS) {
+									Ok(_) => {}
 									Err(error) => {
 										self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 										return;
@@ -153,7 +155,7 @@ impl CustomLang {
 				}
 				// No else as error handling will be handled in the next iteration
 			});
-		}else {
+		} else {
 			self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
 			return;
 		}
