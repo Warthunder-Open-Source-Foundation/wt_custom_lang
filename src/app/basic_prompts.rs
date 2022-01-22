@@ -11,7 +11,7 @@ use crate::{CustomLang, REPO_URL};
 
 impl CustomLang {
 	pub fn prompt_for_status(&mut self, ctx: &CtxRef) {
-		Window::new("Config status").auto_sized().show(ctx, |ui| {
+		Window::new("Config status").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
 			if self.config.is_wt_path_valid() {
 				ui.add(Label::new(RichText::new(format!("WT path is defined and working ✅")).color(Color32::from_rgb(0, 255, 0))));
 			}
@@ -31,7 +31,7 @@ impl CustomLang {
 		});
 	}
 	pub(crate) fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
-		Window::new("First time setup").auto_sized().show(ctx, |ui| {
+		Window::new("First time setup").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
 			ui.add(Hyperlink::from_label_and_url("Where the game might be installed", format!("{}/guide/install_folder.md", REPO_URL)));
@@ -54,7 +54,7 @@ impl CustomLang {
 		});
 	}
 	pub fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
-		Window::new("Configuring the config.blk file").auto_sized().show(ctx, |ui| {
+		Window::new("Configuring the config.blk file").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
 			if let Some(wt_path) = self.config.wt_path.as_ref() {
 				let blk_path = format!("{}/config.blk", wt_path);
 				match fs::read_to_string(&blk_path) {
@@ -90,46 +90,50 @@ impl CustomLang {
 		});
 	}
 	pub fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
-		Window::new("Steps for generating the lang folder").auto_sized().show(ctx, |ui| {
-			if ui.add(Button::new(RichText::new("Launch game").text_style(TextStyle::Heading))).clicked() {
-				// Cloning as the thread consumes the String entirely
-				if let Some(path) = self.config.wt_path.as_ref() {
-					#[cfg(target_os = "windows")] let format_path = format!("{}/launcher.exe", path);
+		Window::new("Launching the game").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
+			ui.horizontal(|ui|{
+				if ui.add(Button::new(RichText::new("Launch game ⬈").text_style(TextStyle::Heading))).clicked() {
+					// Cloning as the thread consumes the String entirely
+					if let Some(path) = self.config.wt_path.as_ref() {
+						#[cfg(target_os = "windows")] let format_path = format!("{}/launcher.exe", path);
 
-					#[cfg(target_os = "linux")] let format_path = format!("{}/launcher", path);
+						#[cfg(target_os = "linux")] let format_path = format!("{}/launcher", path);
 
-					// Spawning loose thread as application completely stalls as long as launcher.exe lives
-					thread::spawn(move || {
-						// Not catching as the process will be orphaned
-						let _ = Command::new(format_path).execute();
-					});
-				} else {
-					self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
-					return;
-				}
-			}
-
-			ui.add_space(20.0);
-
-			if ui.add(Button::new(RichText::new("Check if it was created").text_style(TextStyle::Heading))).clicked() {
-				if let Some(path) = self.config.wt_path.as_ref() {
-					if fs::read_dir(format!("{}/lang", path)).is_ok() {
-						self.config.lang_folder_created = true;
+						// Spawning loose thread as application completely stalls as long as launcher.exe lives
+						thread::spawn(move || {
+							// Not catching as the process will be orphaned
+							let _ = Command::new(format_path).execute();
+						});
+					} else {
+						self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
+						return;
 					}
-				} else {
-					self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
-					return;
 				}
-			}
+
+				ui.add_space(20.0);
+
+				if ui.add(Button::new(RichText::new("Verify folder").text_style(TextStyle::Heading))).clicked() {
+					if let Some(path) = self.config.wt_path.as_ref() {
+						if fs::read_dir(format!("{}/lang", path)).is_ok() {
+							self.config.lang_folder_created = true;
+						}
+					} else {
+						self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
+						return;
+					}
+				}
+			});
 		});
 	}
 	#[cfg(windows)]
 	pub fn prompt_lang_file_warn(&mut self, ctx: &CtxRef) {
-		Window::new("Setting lang folder permissions").show(ctx, |ui| {
-			if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
-				self.config.prompted_about_lang_perm = true;
-			}
-			ui.add(Hyperlink::from_label_and_url("I dont know how to do that", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/windows_lang_permission.md"));
+		Window::new("Setting up permissions").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
+			ui.horizontal(|ui|{
+				ui.add(Hyperlink::from_label_and_url(RichText::new("How to set up proper permissions").text_style(TextStyle::Heading), "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/windows_lang_permission.md"));
+				if ui.add(Button::new(RichText::new("Done!").text_style(TextStyle::Heading))).clicked() {
+					self.config.prompted_about_lang_perm = true;
+				}
+			});
 		});
 	}
 }
