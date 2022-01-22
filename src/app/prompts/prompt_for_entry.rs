@@ -55,7 +55,7 @@ impl CustomLang {
 			Window::new("Adding a new entry").show(ctx, |ui| {
 				let mut original = self.prompt_for_entry.before_after_entry.clone();
 
-				let mut color= Color32::from_rgb(255,255,255);;
+				let mut color= Color32::from_rgb(255,255,255);
 
 				let mut contains = |file_path: &str|{
 					if fs::read_to_string(format!("{}/lang/{}.csv", wt_raw, file_path)).unwrap_or("".to_owned()).contains(&format!(r#""{}""#, &original.0)) {

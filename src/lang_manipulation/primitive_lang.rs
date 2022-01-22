@@ -67,11 +67,11 @@ impl PrimitiveEntry {
 				}
 				_ => {
 					panic!("Custom files are currently not implemented");
-					let mut file = file_to_string(custom_lang, wt_path, &entry.file);
-					file = file.replace(&format(&entry.original_english), &format(&entry.new_english));
-					if let Err(error) = fs::write(string_to_path(&entry.file), file) {
-						custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
-					}
+					// let mut file = file_to_string(custom_lang, wt_path, &entry.file);
+					// file = file.replace(&format(&entry.original_english), &format(&entry.new_english));
+					// if let Err(error) = fs::write(string_to_path(&entry.file), file) {
+					// 	custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
+					// }
 				}
 			}
 		}
