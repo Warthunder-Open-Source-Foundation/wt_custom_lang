@@ -1,5 +1,5 @@
 use std::fs;
-use regex::Regex;
+
 use serde::{Deserialize, Serialize};
 use crate::CustomLang;
 

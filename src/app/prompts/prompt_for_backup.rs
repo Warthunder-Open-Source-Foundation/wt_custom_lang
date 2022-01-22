@@ -1,11 +1,11 @@
 use std::fs;
 use std::ops::Deref;
-use chrono::{NaiveDateTime, TimeZone};
-use eframe::egui::{Button, Color32, CtxRef, InputState, Label, RichText, TextEdit, Window};
+use chrono::{NaiveDateTime};
+use eframe::egui::{Button, Color32, CtxRef, Label, RichText, TextEdit, Window};
 use fs_extra::dir::CopyOptions;
 use serde::{Deserialize, Serialize};
-use crate::{CustomLang, LANG_PATH};
-use crate::local_storage::backup::{BACKUP_PATH, BACKUP_ROOT};
+use crate::{CustomLang};
+use crate::local_storage::backup::{BACKUP_PATH};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PromptForBackup {

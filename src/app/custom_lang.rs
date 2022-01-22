@@ -1,20 +1,21 @@
-use std::fs;
-use std::process::exit;
+
+
 
 use eframe::egui;
-use eframe::egui::{Button, CentralPanel, Color32, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Layout, RichText, ScrollArea, TextStyle, TopBottomPanel, Visuals};
+use eframe::egui::{Button, CtxRef, FontData, FontDefinitions, FontFamily, Hyperlink, Layout, RichText, TextStyle, TopBottomPanel};
 use eframe::egui::FontFamily::Proportional;
-use eframe::egui::Label;
+
 use eframe::egui::TextStyle::{Body, Heading};
 use eframe::epi::{App, Frame, Storage};
 
 use crate::app::prompts::prompt_for_entry::{EMPTY_BEFORE_AFTER, LangType, PromptForEntry};
 use crate::config::Configuration;
-use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
-use crate::local_storage::entries::{READ_PRIMITIVE, WRITE_PRIMITIVE};
+
+
 use crate::{CONFIG_NAME, REPO_URL};
 use crate::app::prompts::prompt_error::AppError;
 use crate::app::prompts::prompt_for_backup::PromptForBackup;
+use crate::app::update::update;
 
 pub struct CustomLang {
 	pub config: Configuration,
@@ -25,142 +26,14 @@ pub struct CustomLang {
 }
 
 pub const STORE_CONF: fn(config: &Configuration) = |config| {
-	if let Err(err) = confy::store(CONFIG_NAME, config) {
+	if let Err(_err) = confy::store(CONFIG_NAME, config) {
 		panic!("Failed to write to configuration file, this error will be discontinued soon");
 	}
 };
 
 impl App for CustomLang {
 	fn update(&mut self, ctx: &CtxRef, frame: &Frame) {
-		if self.config.dark_mode {
-			ctx.set_visuals(Visuals::dark());
-		} else {
-			ctx.set_visuals(Visuals::light());
-		}
-		if self.prompt_error.err_value.is_some() {
-			self.prompt_error(ctx);
-		} else {
-			match () {
-				_ if self.config.wt_path.is_none() => {
-					self.prompt_for_wt_path(ctx);
-					STORE_CONF(&self.config);
-				}
-				_ if !self.config.blk_set => {
-					self.prompt_for_config_blk(ctx);
-					STORE_CONF(&self.config);
-				}
-				_ if !self.config.lang_folder_created => {
-					self.prompt_for_lang_folder(ctx);
-					STORE_CONF(&self.config);
-				}
-				_ if self.status_menu => {
-					self.prompt_for_status(ctx);
-				}
-				_ if self.prompt_for_entry.show  => {
-					self.prompt_for_entry(ctx);
-					STORE_CONF(&self.config);
-				}
-				_ if self.prompt_for_backup.active => {
-					self.prompt_for_backup(ctx);
-					STORE_CONF(&self.config);
-				}
-				#[cfg(windows)]
-				_ if !self.config.prompted_about_lang_perm => {
-					self.prompt_lang_file_warn(ctx);
-					STORE_CONF(&self.config);
-				}
-				_ => {}
-			}
-			self.render_header_bar(ctx, frame);
-			CentralPanel::default().show(ctx, |ui| {
-				ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
-					ui.horizontal(|ui| {
-						{
-							if ui.add(Button::new("Add new entry")).clicked() {
-								self.prompt_for_entry.show = true;
-							}
-						}
-
-						{
-							let lang_enabled = self.config.is_lang_enabled().unwrap_or(true);
-							let lang_toggle_text: RichText = if lang_enabled {
-								RichText::new("Global custom lang on").color(Color32::from_rgb(0, 255, 0))
-							} else {
-								RichText::new("Global custom lang off").color(Color32::from_rgb(255, 0, 0))
-							};
-							if ui.add(Button::new(lang_toggle_text)).clicked() {
-								if let Some(path) = self.config.wt_path.as_ref() {
-									let path = format!("{}/config.blk", path);
-									match fs::read_to_string(&path) {
-										Ok(file) => {
-											const LOCALIZATION_TOGGLE: [&str; 2] = ["testLocalization:b=yes", "testLocalization:b=no"];
-											let file = &file.replace(LOCALIZATION_TOGGLE[!lang_enabled as usize], LOCALIZATION_TOGGLE[lang_enabled as usize]);
-
-											if fs::write(&path, file).is_ok() {
-												if let Some(lang_enabled) = self.config.is_lang_enabled() {
-													self.config.enable_lang = lang_enabled;
-													STORE_CONF(&self.config);
-												} else {
-													self.prompt_error.err_value = Some("Failed to check if localization was defined in config.blk".to_owned());
-													return;
-												}
-											}
-										}
-										Err(err) => {
-											self.prompt_error.err_value = Some(format!("{}", err).to_owned());
-											return;
-										}
-									}
-								} else {
-									self.prompt_error.err_value = Some("WT path should be set, but was none".to_owned());
-									return;
-								}
-							}
-						}
-
-						{
-							if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-								if let Some(path) = &self.config.wt_path.clone().as_ref() {
-									let entries = READ_PRIMITIVE();
-
-									PrimitiveEntry::replace_all_entries_direct_str(self, &entries, path, true);
-
-									if self.prompt_error.err_value.is_none() {
-										WRITE_PRIMITIVE(&entries);
-
-									}
-								} else {
-									self.prompt_error.err_value = Some("WT path should be set, but was none".to_owned());
-									return;
-								}
-							}
-						}
-
-						{
-							if ui.add(Button::new("Backups")).clicked() {
-								self.prompt_for_backup.active = true;
-							}
-						}
-					});
-
-					ui.add_space(5.0);
-
-
-					let prim_array = READ_PRIMITIVE();
-
-					for (i, primitive_entry) in prim_array.iter().enumerate() {
-						ui.horizontal(|ui| {
-							ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
-							if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
-								self.undo_entry(i, primitive_entry);
-								STORE_CONF(&self.config);
-							}
-						});
-					}
-				});
-				render_footer(ctx);
-			});
-		}
+		update(self, ctx, frame)
 	}
 
 // fn save(&mut self, _storage: &mut dyn Storage) {
@@ -223,7 +96,7 @@ impl CustomLang {
 			prompt_error: AppError { err_value: None },
 		}
 	}
-	fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
+	pub fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
 		TopBottomPanel::top("top_panel").show(ctx, |ui| {
 			ui.add_space(10.);
 			egui::menu::bar(ui, |ui| {
@@ -255,7 +128,7 @@ impl CustomLang {
 	}
 }
 
-fn render_footer(ctx: &CtxRef) {
+pub fn render_footer(ctx: &CtxRef) {
 	TopBottomPanel::bottom("footer").show(ctx, |ui| {
 		ui.vertical_centered(|ui| {
 			ui.add_space(10.0);

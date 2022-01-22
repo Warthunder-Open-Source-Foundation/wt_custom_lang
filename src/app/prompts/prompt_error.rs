@@ -2,7 +2,7 @@ use std::fs;
 use std::process::exit;
 use std::thread::sleep;
 use std::time::Duration;
-use eframe::egui::{CtxRef, Label, Ui, Window};
+use eframe::egui::{CtxRef, Label, Window};
 use notify_rust::Notification;
 use crate::{CONFIG_NAME, CustomLang};
 

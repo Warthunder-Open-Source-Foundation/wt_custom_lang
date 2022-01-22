@@ -4,7 +4,7 @@ use std::{fs};
 
 use eframe::{NativeOptions, run_native};
 use eframe::egui::Vec2;
-use notify_rust::Notification;
+
 
 use app::custom_lang::CustomLang;
 use crate::app::prompts::prompt_for_backup::BACKUP_ENTRY_STORAGE;
