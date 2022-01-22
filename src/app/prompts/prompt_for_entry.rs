@@ -66,11 +66,6 @@ impl CustomLang {
 					}
 				};
 
-				contains(self.prompt_for_entry.toggle_dropdown.to_file_name());
-
-				ui.add(TextEdit::singleline (&mut original.0).hint_text("Old name").text_color(color));
-				ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
-
 				ui.horizontal(|ui| {
 					ComboBox::from_label("").selected_text(format!("{:?}", self.prompt_for_entry.toggle_dropdown)).show_ui(ui, |ui| {
 						ui.selectable_value(&mut self.prompt_for_entry.toggle_dropdown, LangType::Units, "Unit");
@@ -81,10 +76,16 @@ impl CustomLang {
 					ui.add(Hyperlink::from_label_and_url("What these options mean", "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/wiki/Types-of-supported-language-files"));
 				});
 
+
+				contains(self.prompt_for_entry.toggle_dropdown.to_file_name());
+
+				ui.add(TextEdit::singleline (&mut original.0).hint_text("Old name").text_color(color));
+				ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
+
 				self.prompt_for_entry.before_after_entry = original;
 
 				ui.horizontal(|ui| {
-					if ui.add(Button::new(RichText::new("Create!").text_style(TextStyle::Heading))).clicked() {
+					if ui.add(Button::new(RichText::new("Create").text_style(TextStyle::Heading))).clicked() {
 						let lang_type = self.prompt_for_entry.toggle_dropdown.to_file_name();
 						let path: String = format!("{}/lang/{}.csv", wt_raw, lang_type);
 
