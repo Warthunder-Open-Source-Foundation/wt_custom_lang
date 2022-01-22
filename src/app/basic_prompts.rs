@@ -10,7 +10,7 @@ use rfd::FileDialog;
 use crate::{CustomLang, REPO_URL};
 
 impl CustomLang {
-	pub(crate) fn prompt_for_status(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_status(&mut self, ctx: &CtxRef) {
 		Window::new("Config status").show(ctx, |ui| {
 			if self.config.is_wt_path_valid() {
 				ui.add(Label::new(RichText::new(format!("WT path is defined and working ✅")).color(Color32::from_rgb(0, 255, 0))));
@@ -38,61 +38,87 @@ impl CustomLang {
 
 			if select_button.clicked() {
 				if let Some(path) = FileDialog::new().pick_folder() {
-					if fs::read(&format!("{}/config.blk", path.to_str().unwrap())).is_ok() {
-						self.config.wt_path = Some(path.to_str().unwrap().to_owned());
-						ui.add(Label::new(format!("Path {} successfully selected", path.to_str().unwrap())));
+					if let Some(path) = path.to_str() {
+						if fs::read(&format!("{}/config.blk", path)).is_ok() {
+							self.config.wt_path = Some(path.to_owned());
+							ui.add(Label::new(format!("Path {} successfully selected", path)));
+						} else {
+							ui.add(Label::new(format!("Path {} is invalid", path)));
+						}
 					} else {
-						ui.add(Label::new(format!("Path {} is invalid", path.to_str().unwrap())));
+						self.prompt_error.err_value = Some("Could not convert chosen path to real system path".to_owned());
+						return;
 					}
 				}
 			}
 		});
 	}
-	pub(crate) fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_config_blk(&mut self, ctx: &CtxRef) {
 		Window::new("Configuring the config.blk file").show(ctx, |ui| {
-			let blk_path = format!("{}/config.blk", self.config.wt_path.as_ref().unwrap());
-			let config_blk = fs::read_to_string(&blk_path).unwrap();
+			if let Some(wt_path) = self.config.wt_path.as_ref() {
+				let blk_path = format!("{}/config.blk", wt_path);
+				match fs::read_to_string(&blk_path) {
+					Ok(config_blk) => {
+						if !config_blk.contains("testLocalization:b=yes") {
+							if ui.add(Button::new("Configure config.blk")).clicked() {
+								// Using this non-conforming strategy of editing the file, as it uses a undefined file format
+								if let Some(debug_num) = config_blk.find("debug{") {
+									let debug_loc = config_blk.split_at(debug_num + 7);
+									let new = format!("{}\n{}{}", debug_loc.0, "  testLocalization:b=yes", debug_loc.1);
 
-			if !config_blk.contains("testLocalization:b=yes") {
-				if ui.add(Button::new("Configure config.blk")).clicked() {
-					// Using this non-conforming strategy of editing the file, as it uses a undefined file format
-					let debug_loc = config_blk.split_at(config_blk.find("debug{").unwrap() + 7);
-					let new = format!("{}\n{}{}", debug_loc.0, "  testLocalization:b=yes", debug_loc.1);
-
-					if fs::write(&blk_path, new).is_ok() {
-						self.config.blk_set = true;
+									if fs::write(&blk_path, new).is_ok() {
+										self.config.blk_set = true;
+									}
+								} else {
+									self.prompt_error.err_value = Some("Failed to find \"debug{{\" in config.blk, it might be bricked".to_owned());
+									return;
+								}
+							}
+							if ui.add(Button::new("I already configured config.blk")).clicked() {
+								self.config.blk_set = true;
+							}
+						} else {
+							self.config.blk_set = true;
+						}
+					}
+					Err(err) => {
+						self.prompt_error.err_value = Some(err.to_string());
+						return;
 					}
 				}
-				if ui.add(Button::new("I already configured config.blk")).clicked() {
-					self.config.blk_set = true;
-				}
-			} else {
-				self.config.blk_set = true;
 			}
 		});
 	}
-	pub(crate) fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_lang_folder(&mut self, ctx: &CtxRef) {
 		Window::new("Steps for generating the lang folder").show(ctx, |ui| {
 			if ui.add(Button::new(RichText::new("Launch game").text_style(TextStyle::Heading))).clicked() {
 				// Cloning as the thread consumes the String entirely
-				let path = self.config.wt_path.as_ref().unwrap().clone();
+				if let Some(path) = self.config.wt_path.as_ref() {
+					#[cfg(target_os = "windows")] let format_path = format!("{}/launcher.exe", path);
 
-				#[cfg(target_os = "windows")] let format_path = format!("{}/launcher.exe", path);
+					#[cfg(target_os = "linux")] let format_path = format!("{}/launcher", path);
 
-				#[cfg(target_os = "linux")] let format_path = format!("{}/launcher", path);
-
-				// Spawning loose thread as application completely stalls as long as launcher.exe lives
-				thread::spawn(move || {
-					// Not catching as the process will be orphaned
-					let _ = Command::new(format_path).execute();
-				});
+					// Spawning loose thread as application completely stalls as long as launcher.exe lives
+					thread::spawn(move || {
+						// Not catching as the process will be orphaned
+						let _ = Command::new(format_path).execute();
+					});
+				} else {
+					self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
+					return;
+				}
 			}
 
 			ui.add_space(20.0);
 
 			if ui.add(Button::new(RichText::new("Check if it was created").text_style(TextStyle::Heading))).clicked() {
-				if fs::read_dir(format!("{}/lang", self.config.wt_path.as_ref().unwrap())).is_ok() {
-					self.config.lang_folder_created = true;
+				if let Some(path) = self.config.wt_path.as_ref() {
+					if fs::read_dir(format!("{}/lang", path)).is_ok() {
+						self.config.lang_folder_created = true;
+					}
+				} else {
+					self.prompt_error.err_value = Some("No WT path is set, but at this point in time it should be".to_owned());
+					return;
 				}
 			}
 		});
