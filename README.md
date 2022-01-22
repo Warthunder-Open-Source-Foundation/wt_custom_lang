@@ -8,4 +8,4 @@
 
 Done!
 
-# For using the tool, please refer to here
+# For using the tool, please refer to <a href="https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/nightly/guide/how_to_use.md" title="guide">here</a> 
