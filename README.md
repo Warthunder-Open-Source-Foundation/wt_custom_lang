@@ -1,6 +1,18 @@
-#<a href="https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/simple_installation.md" title="simple installation ">Simple installation guide </a>
+# About
+### Who is this for?
+- Anyone looking to rename vehicles/UI elements without the annoying manual process
+- Anyone already using custom languages but doesn't want the file to break every patch
 
-# For using the tool, please refer to <a href="https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/how_to_use.md" title="guide">here</a>
+### Why should you use it?
+- Easy interface for managing entries
+- Automatically fix file where a new patch would break the old one
+- Create backups/presets to switch between different setups
+- It is 100% free and open-source
+
+## Other
+- <a href="https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/simple_installation.md" title="simple installation ">Simple installation guide </a>
+
+- <a href="https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master/guide/how_to_use.md" title="guide">Manual</a>
 
 ***
 
