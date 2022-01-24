@@ -4,6 +4,7 @@ use std::fs;
 
 use eframe::{NativeOptions, run_native};
 use eframe::egui::Vec2;
+use notify_rust::Notification;
 
 use app::custom_lang::CustomLang;
 
