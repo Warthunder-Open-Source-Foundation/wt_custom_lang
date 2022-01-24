@@ -27,4 +27,4 @@ mv ./target/x86_64-pc-windows-gnu/release/wt_custom_lang.exe ./wt_custom_lang_wi
 mv ./target/x86_64-unknown-linux-gnu/release/wt_custom_lang ./wt_custom_lang_linux_x86_64
 
 echo "Creating release"
-gh release create v1.0.0 --generate-notes ./wt_custom_lang_windows_x86_64.exe ./wt_custom_lang_linux_x86_64 ./LICENSE ./NOTICE
+gh release create v1.0.1 --generate-notes ./wt_custom_lang_windows_x86_64.exe ./wt_custom_lang_linux_x86_64 ./LICENSE ./NOTICE
