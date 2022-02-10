@@ -2445,6 +2445,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "wt_csv"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc1f211fd50f273dbd185bd9c7532b9b3c381ed0f713df14b1d06c0194c0fc1d"
+
+[[package]]
 name = "wt_custom_lang"
 version = "1.1.0"
 dependencies = [
@@ -2463,6 +2469,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sysinfo",
+ "wt_csv",
 ]
 
 [[package]]
