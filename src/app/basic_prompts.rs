@@ -112,6 +112,14 @@ impl CustomLang {
 
 				ui.add_space(20.0);
 
+
+					if let Some(path) = self.config.wt_path.as_ref() {
+						if fs::read_dir(format!("{}/lang", path)).is_ok() {
+							self.config.lang_folder_created = true;
+							return;
+						}
+					}
+
 				if ui.add(Button::new(RichText::new("Verify folder").text_style(TextStyle::Heading))).clicked() {
 					if let Some(path) = self.config.wt_path.as_ref() {
 						if fs::read_dir(format!("{}/lang", path)).is_ok() {
