@@ -23,7 +23,7 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 				custom_lang.prompt_for_wt_path(ctx);
 				STORE_CONF(&custom_lang.config);
 			}
-			_ if !custom_lang.config.blk_set => {
+			_ if custom_lang.config.is_lang_enabled().is_none() => {
 				custom_lang.prompt_for_config_blk(ctx);
 				STORE_CONF(&custom_lang.config);
 			}
