@@ -26,7 +26,7 @@ pub fn main() {
 			std::panic::set_hook(Box::new(|panic_info| {
 				let err_notification = || {
 					// Error dropped as there is quite literally nothing that can be done at this point
-					let _ = Notification::new()
+					let _ = notify_rust::Notification::new()
 						.summary("WT-custom-lang exited unexpectedly")
 						.body("if this issue keeps occurring please open an issue")
 						.show();
