@@ -15,10 +15,11 @@ mod config;
 mod lang_manipulation;
 pub mod app;
 pub mod local_storage;
+mod cache;
 
 const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master";
 
-const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
+const CONFIG_NAME: &str = "wt_custom_lang"; //DO NOT CHANCE UNLESS ABSOLUTELY NECESSARY
 
 pub fn main() {
 	#[cfg(not(debug_assertions))]

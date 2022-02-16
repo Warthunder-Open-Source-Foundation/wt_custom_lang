@@ -16,6 +16,7 @@ use crate::{CONFIG_NAME, REPO_URL};
 use crate::app::prompts::prompt_error::AppError;
 use crate::app::prompts::prompt_for_backup::PromptForBackup;
 use crate::app::update::update;
+use crate::cache::cache::Cache;
 
 pub struct CustomLang {
 	pub config: Configuration,
@@ -23,6 +24,7 @@ pub struct CustomLang {
 	pub prompt_for_backup: PromptForBackup,
 	pub prompt_for_entry: PromptForEntry,
 	pub prompt_error: AppError,
+	pub cache: Cache,
 }
 
 pub const STORE_CONF: fn(config: &Configuration) = |config| {
@@ -92,8 +94,9 @@ impl CustomLang {
 			config,
 			status_menu: false,
 			prompt_for_backup: PromptForBackup { active: false, backup_name: "".to_owned() },
-			prompt_for_entry: PromptForEntry { show: false, before_after_entry: EMPTY_BEFORE_AFTER(), toggle_dropdown: LangType::default() },
+			prompt_for_entry: PromptForEntry { show: false, before_after_entry: EMPTY_BEFORE_AFTER(), toggle_dropdown: LangType::default(), searchbar: None },
 			prompt_error: AppError { err_value: None },
+			cache: Cache::new(),
 		}
 	}
 	pub fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {

@@ -30,7 +30,7 @@ impl CustomLang {
 			}
 		});
 	}
-	pub(crate) fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
 		Window::new("First time setup").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
