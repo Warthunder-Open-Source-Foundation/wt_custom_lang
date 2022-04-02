@@ -1,8 +1,6 @@
 use std::{fs};
-use std::thread::sleep;
-use std::time::Duration;
 
-use eframe::egui::{Button, Color32, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Vec2, Window};
+use eframe::egui::{Button, Color32, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
 use levenshtein::levenshtein;
 use wt_csv::wtcsv::core::wtcsv::WTCSV;
 

@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, thread};
 
 use eframe::egui::{Button, CentralPanel, Color32, CtxRef, RichText, ScrollArea, Visuals};
 use eframe::egui::Label;
@@ -98,15 +98,42 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 
 					{
 						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-							if let Some(path) = &custom_lang.config.wt_path.clone().as_ref() {
+							static SOURCE_URL: &str = "https://raw.githubusercontent.com/Warthunder-Open-Source-Foundation/wt_datamine_extractor/master/lang/";
+
+							static TRACKED_FILES: [&str; 4] = ["units.csv", "ui.csv", "_common_languages.csv", "menu.csv"];
+
+							if let Some(wt_path) =  custom_lang.config.wt_path.clone() {
+								let mut handles = vec![];
+								for text in TRACKED_FILES {
+									let cloned_path = wt_path.clone();
+									let handle = thread::spawn(move || {
+										if let Ok(res) = reqwest::blocking::get(format!("{SOURCE_URL}{}", text.clone())) {
+											if let Ok(bytes) = res.bytes() {
+												if let Ok(file) = String::from_utf8(bytes.to_vec()) {
+													let path = format!("{}/lang/{text}", cloned_path);
+													let _ = fs::write(&path, file);
+												}
+											}
+										}
+									});
+									handles.push(handle);
+								}
+								for handle in handles {
+									if handle.join().is_err() {
+										custom_lang.prompt_error.err_value = Some("A thread failed to download and write new custom files".to_owned());
+									}
+								}
+
+
+								// Start patching
 								let entries = READ_PRIMITIVE();
 
-								PrimitiveEntry::replace_all_entries_direct_str(custom_lang, &entries, path, true);
+								PrimitiveEntry::replace_all_entries_direct_str(custom_lang, &entries, &wt_path, true);
 
 								if custom_lang.prompt_error.err_value.is_none() {
 									WRITE_PRIMITIVE(&entries);
 								}
-							} else {
+							}else {
 								custom_lang.prompt_error.err_value = Some("WT path should be set, but was none".to_owned());
 								return;
 							}
