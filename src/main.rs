@@ -44,7 +44,7 @@ const TRACKED_FILES: [&str; 54] = [
 	"unlocks_achievements.csv",
 	"benchmark.csv",
 	"missions_briefing.csv",
-	"pc_UiMessages.csv",
+	// "pc_UiMessages.csv",
 	"unlocks_attachables.csv",
 	"controls.csv",
 	"missions_campaign.csv",
@@ -58,7 +58,7 @@ const TRACKED_FILES: [&str; 54] = [
 	"missions_debriefings.csv",
 	"speech_guadalcanal.csv",
 	"unlocks_decals.csv",
-	// "localization.blk",
+	"localization.blk",
 	"missions_dynamic.csv",
 	"speech_honolulu.csv",
 	"unlocks_medals.csv",
@@ -118,7 +118,7 @@ pub fn main() {
 		match fs::write(&LANG_PATH.constructed_path, b"[]") {
 			Ok(_) => {}
 			Err(err) => {
-				panic!("{:?}", err);
+				panic!("{}:{} {:?}", line!(), column!(), err);
 			}
 		};
 	}
@@ -128,7 +128,7 @@ pub fn main() {
 		match fs::write(&BACKUP_ENTRY_STORAGE(), b"[]") {
 			Ok(_) => {}
 			Err(err) => {
-				panic!("{:?}", err);
+				panic!("{}:{} {:?}", line!(), column!(), err);
 			}
 		};
 	}
