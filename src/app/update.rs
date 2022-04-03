@@ -1,10 +1,13 @@
-use std::fs;
+use std::{fs, thread};
+use std::fs::File;
+use std::io::Write;
 
 use eframe::egui::{Button, CentralPanel, Color32, CtxRef, RichText, ScrollArea, Visuals};
 use eframe::egui::Label;
 use eframe::epi::Frame;
+use reqwest::StatusCode;
 
-use crate::CustomLang;
+use crate::{CustomLang, TRACKED_FILES};
 use crate::app::custom_lang::{render_footer, STORE_CONF};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::local_storage::entries::{READ_PRIMITIVE, WRITE_PRIMITIVE};
@@ -16,14 +19,14 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 		ctx.set_visuals(Visuals::light());
 	}
 	if custom_lang.prompt_error.err_value.is_some() {
-		custom_lang.prompt_error(ctx);
+		custom_lang.prompt_error(ctx, frame);
 	} else {
 		match () {
 			_ if custom_lang.config.wt_path.is_none() => {
 				custom_lang.prompt_for_wt_path(ctx);
 				STORE_CONF(&custom_lang.config);
 			}
-			_ if !custom_lang.config.blk_set => {
+			_ if custom_lang.config.is_lang_enabled().is_none() => {
 				custom_lang.prompt_for_config_blk(ctx);
 				STORE_CONF(&custom_lang.config);
 			}
@@ -85,7 +88,7 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 										}
 									}
 									Err(err) => {
-										custom_lang.prompt_error.err_value = Some(format!("{}", err).to_owned());
+										custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
 										return;
 									}
 								}
@@ -98,15 +101,56 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 
 					{
 						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
-							if let Some(path) = &custom_lang.config.wt_path.clone().as_ref() {
+							static SOURCE_URL: &str = "https://raw.githubusercontent.com/Warthunder-Open-Source-Foundation/wt_datamine_extractor/master/lang/";
+
+							if let Some(wt_path) =  custom_lang.config.wt_path.clone() {
+								let mut handles = vec![];
+								for text in TRACKED_FILES {
+									let cloned_path = wt_path.clone();
+									let handle = thread::spawn(move || {
+										if let Ok(res) = reqwest::blocking::get(format!("{SOURCE_URL}{}", text.clone())) {
+											if res.status() == StatusCode::OK {
+												if let Ok(bytes) = res.bytes() {
+													if let Ok(file) = String::from_utf8(bytes.to_vec()) {
+														let path = format!("{}/lang/{text}", cloned_path);
+														match fs::write(path, file)  {
+															Ok(_) => {}
+															Err(err) => {
+																panic!("Cant write {text} to file due to {err}");
+															}
+														}
+													} else {
+														panic!("Cant parse {text} to string");
+													}
+												} else {
+													panic!("{text} has no bytes");
+												}
+											} else {
+												panic!("{text} failed to request, status code was {}", res.status().as_u16());
+											}
+										} else {
+											panic!("failed to request {text}");
+										}
+									});
+									handles.push(handle);
+								}
+
+								for handle in handles {
+									if handle.join().is_err() {
+										custom_lang.prompt_error.err_value = Some("A thread failed to download and write new custom files".to_owned());
+									}
+								}
+
+
+								// Start patching
 								let entries = READ_PRIMITIVE();
 
-								PrimitiveEntry::replace_all_entries_direct_str(custom_lang, &entries, path, true);
+								PrimitiveEntry::replace_all_entries_direct_str(custom_lang, &entries, &wt_path, true);
 
 								if custom_lang.prompt_error.err_value.is_none() {
 									WRITE_PRIMITIVE(&entries);
 								}
-							} else {
+							}else {
 								custom_lang.prompt_error.err_value = Some("WT path should be set, but was none".to_owned());
 								return;
 							}

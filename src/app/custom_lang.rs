@@ -16,6 +16,7 @@ use crate::{CONFIG_NAME, REPO_URL};
 use crate::app::prompts::prompt_error::AppError;
 use crate::app::prompts::prompt_for_backup::PromptForBackup;
 use crate::app::update::update;
+use crate::cache::cache::Cache;
 
 pub struct CustomLang {
 	pub config: Configuration,
@@ -23,6 +24,7 @@ pub struct CustomLang {
 	pub prompt_for_backup: PromptForBackup,
 	pub prompt_for_entry: PromptForEntry,
 	pub prompt_error: AppError,
+	pub cache: Cache,
 }
 
 pub const STORE_CONF: fn(config: &Configuration) = |config| {
@@ -92,8 +94,9 @@ impl CustomLang {
 			config,
 			status_menu: false,
 			prompt_for_backup: PromptForBackup { active: false, backup_name: "".to_owned() },
-			prompt_for_entry: PromptForEntry { show: false, before_after_entry: EMPTY_BEFORE_AFTER(), toggle_dropdown: LangType::default() },
-			prompt_error: AppError { err_value: None },
+			prompt_for_entry: PromptForEntry { show: false, before_after_entry: EMPTY_BEFORE_AFTER(), toggle_dropdown: LangType::default(), searchbar: None },
+			prompt_error: AppError { err_value: None, already_wrote_err: false },
+			cache: Cache::new(),
 		}
 	}
 	pub fn render_header_bar(&mut self, ctx: &CtxRef, frame: &Frame) {
@@ -105,12 +108,7 @@ impl CustomLang {
 				});
 				ui.with_layout(Layout::right_to_left(), |ui| {
 					if ui.add(Button::new(RichText::new("🔄 Reset configuration").text_style(TextStyle::Body))).clicked() {
-						if let Err(err) = confy::store(CONFIG_NAME, Configuration::default()) {
-							self.prompt_error.err_value = Some(err.to_string());
-							return;
-						} else {
-							frame.quit();
-						}
+						self.reset_applet_config(frame);
 					}
 
 					if ui.add(Button::new(RichText::new("Status").text_style(TextStyle::Body))).clicked() {
@@ -125,6 +123,14 @@ impl CustomLang {
 			});
 			ui.add_space(10.);
 		});
+	}
+	pub fn reset_applet_config(&mut self, frame: &Frame) {
+		if let Err(err) = confy::store(CONFIG_NAME, Configuration::default()) {
+			self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
+			return;
+		} else {
+			frame.quit();
+		}
 	}
 }
 

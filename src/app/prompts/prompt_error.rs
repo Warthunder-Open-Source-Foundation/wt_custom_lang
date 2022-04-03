@@ -2,26 +2,32 @@ use std::fs;
 use std::process::exit;
 use std::thread::sleep;
 use std::time::Duration;
-use eframe::egui::{CtxRef, Label, Window};
+use eframe::egui::{Button, CtxRef, Label, Window};
+use eframe::epi::Frame;
 use notify_rust::Notification;
 use crate::{CONFIG_NAME, CustomLang};
 
 pub struct AppError {
 	pub err_value: Option<String>,
+	pub already_wrote_err: bool,
 }
 
 impl CustomLang {
-	pub fn prompt_error(&self, ctx: &CtxRef) {
+	pub fn prompt_error(&mut self, ctx: &CtxRef, frame: &Frame) {
 		Window::new("An error occurred").show(ctx, |ui|{
 			if let Some(error) = self.prompt_error.err_value.as_ref() {
 				println!("{}", error);
-				store_err(&error);
+				if !self.prompt_error.already_wrote_err {
+					store_err(&error);
+					self.prompt_error.already_wrote_err = true;
+				}
 				ui.add(Label::new(&**error));
-				sleep(Duration::from_secs(10));
-				exit(1);
 			} else {
 				// No but seriously, this function should only be called if err_value is some in the first place
 				panic!("{}", "This level of failure should be impossible to reach");
+			}
+			if ui.add(Button::new("Reset application data")).clicked() {
+				self.reset_applet_config(frame);
 			}
 		});
 	}

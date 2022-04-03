@@ -84,7 +84,7 @@ impl CustomLang {
 					match fs::create_dir_all(&path) {
 						Ok(_) => {
 							if let Err(err) = fs_extra::dir::copy(wt_folder, &path, &COPY_OPTIONS) {
-								self.prompt_error.err_value = Some(err.to_string());
+								self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
 								return;
 							} else {
 								backups.push(BackupEntry {

@@ -35,8 +35,6 @@ impl PrimitiveEntry {
 	pub fn replace_all_entries_direct_str(custom_lang: &mut CustomLang, entries: &[Self], wt_path: &str, whole_word: bool) {
 		let string_to_path = |x: &str| format!("{}/lang/{}.csv", wt_path, x);
 
-		eprintln!("entries = {:?}", entries);
-
 		let mut units = file_to_string(custom_lang, wt_path, "units");
 		let mut ui = file_to_string(custom_lang, wt_path, "ui");
 		let mut common_languages = file_to_string(custom_lang, wt_path, "_common_languages");

@@ -1,12 +1,14 @@
 use std::{fs};
 
 use eframe::egui::{Button, Color32, ComboBox, CtxRef, Hyperlink, RichText, TextEdit, TextStyle, Window};
+use levenshtein::levenshtein;
+use wt_csv::wtcsv::core::wtcsv::WTCSV;
 
 use crate::{CustomLang};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::local_storage::entries::{LANG_PATH, READ_PRIMITIVE, WRITE_PRIMITIVE};
 
-pub const EMPTY_BEFORE_AFTER: fn() -> (String, String) = ||{
+pub const EMPTY_BEFORE_AFTER: fn() -> (String, String) = || {
 	("".to_owned(), "".to_owned())
 };
 
@@ -14,6 +16,7 @@ pub struct PromptForEntry {
 	pub show: bool,
 	pub before_after_entry: (String, String),
 	pub toggle_dropdown: LangType,
+	pub searchbar: Option<String>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -54,15 +57,19 @@ impl CustomLang {
 		if let Some(wt_raw) = self.config.wt_path.as_ref() {
 			Window::new("Adding a new entry").show(ctx, |ui| {
 				let mut original = self.prompt_for_entry.before_after_entry.clone();
+				let path = format!("{}/lang/{}.csv", wt_raw, &self.prompt_for_entry.toggle_dropdown.to_file_name());
 
-				let mut color= Color32::from_rgb(255,255,255);
+				let mut color = Color32::from_rgb(255, 255, 255);
 
-				let mut contains = |file_path: &str|{
-					if fs::read_to_string(format!("{}/lang/{}.csv", wt_raw, file_path)).unwrap_or("".to_owned()).contains(&format!(r#""{}""#, &original.0)) {
-						color = Color32::from_rgb(0,255,0);
-
+				let incomplete = fs::read_to_string(&path).unwrap_or("".to_owned());
+				let mut contains = || {
+					if let Some(search) = &self.prompt_for_entry.searchbar {
+						original.0 = search.clone();
+						color = Color32::from_rgb(64, 64, 255);
+					} else if incomplete.contains(&format!(r#""{}""#, &original.0)) {
+						color = Color32::from_rgb(0, 255, 0);
 					} else {
-						color = Color32::from_rgb(255,255,255);
+						color = Color32::from_rgb(255, 255, 255);
 					}
 				};
 
@@ -77,9 +84,25 @@ impl CustomLang {
 				});
 
 
-				contains(self.prompt_for_entry.toggle_dropdown.to_file_name());
+				contains();
 
-				ui.add(TextEdit::singleline (&mut original.0).hint_text("Old name").text_color(color));
+				let search_icon = if self.prompt_for_entry.searchbar.is_some() {
+					Button::new("❌")
+				} else {
+					Button::new("🔍")
+				};
+
+
+				ui.horizontal(|ui| {
+					ui.add(TextEdit::singleline(&mut original.0).interactive(self.prompt_for_entry.searchbar.is_none()).hint_text("Old name").text_color(color));
+					if ui.add(search_icon).clicked() {
+						if self.prompt_for_entry.searchbar.is_none() {
+							self.prompt_for_entry.searchbar = closest_word(&original.0, fs::read_to_string(&path).unwrap());
+						} else {
+							self.prompt_for_entry.searchbar = None;
+						}
+					}
+				});
 				ui.add(TextEdit::singleline(&mut original.1).hint_text("New name"));
 
 				self.prompt_for_entry.before_after_entry = original;
@@ -128,7 +151,7 @@ impl CustomLang {
 			let lang_type = self.prompt_for_entry.toggle_dropdown.to_file_name();
 			let path: String = format!("{}/lang/{}.csv", wt_raw, lang_type);
 
-			match  fs::read_to_string(&path) {
+			match fs::read_to_string(&path) {
 				Ok(mut file) => {
 					let entry = PrimitiveEntry {
 						file: primitive_entry.file.clone(),
@@ -142,7 +165,7 @@ impl CustomLang {
 					if fs::write(&path, file).is_ok() {
 						match fs::read(&LANG_PATH.constructed_path) {
 							Ok(entries) => {
-								match  serde_json::from_slice::<Vec<PrimitiveEntry>>(&entries) {
+								match serde_json::from_slice::<Vec<PrimitiveEntry>>(&entries) {
 									Ok(mut old) => {
 										old.remove(i);
 
@@ -159,9 +182,8 @@ impl CustomLang {
 								return;
 							}
 						}
-
 					}
-				},
+				}
 				Err(error) => {
 					self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", error, line!(), column!(), file!()));
 					return;
@@ -172,4 +194,27 @@ impl CustomLang {
 			return;
 		}
 	}
+}
+
+
+pub fn closest_word(known: &str, file: String) -> Option<String> {
+	let wtcsv = WTCSV::new_from_file(&file, "blank").unwrap();
+
+	let mut vec: Vec<(usize, String)> = Vec::new();
+
+	for record in wtcsv.records {
+		let item = record.items[1].to_owned();
+		if item.contains(known) {
+			vec.push((levenshtein(&item, known), item));
+		}
+	}
+
+	vec.sort_by_key(|x| x.0);
+
+	if let Some(val) = vec.first() {
+		if val.0 < known.len() {
+			return Some(val.1.to_owned());
+		}
+	}
+	None
 }

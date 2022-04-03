@@ -1,7 +1,7 @@
 [package]
 name = "wt_custom_lang"
 description = "A tool to create custom language files for the game War Thunder"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 rust-version = "1.58"
 license = "Apache-2.0"
@@ -37,6 +37,9 @@ duckstore = "^2.1.0"
 lazy_static = "^1.4.0"
 fs_extra = "^1.2.0"
 notify-rust = "^4.5.5"
+wt_csv = "0.10.0"
+levenshtein = "^1.0.5"
+reqwest = { version = "^0.11.10", features = ["blocking"] }
 
 #[target.'cfg(windows)'.build-dependencies]
 #winres = "0.1.12"

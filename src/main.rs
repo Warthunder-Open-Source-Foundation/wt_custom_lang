@@ -4,7 +4,6 @@ use std::fs;
 
 use eframe::{NativeOptions, run_native};
 use eframe::egui::Vec2;
-use notify_rust::Notification;
 
 use app::custom_lang::CustomLang;
 
@@ -16,45 +15,101 @@ mod config;
 mod lang_manipulation;
 pub mod app;
 pub mod local_storage;
+mod cache;
 
 const REPO_URL: &str = "https://github.com/Warthunder-Open-Source-Foundation/wt_custom_lang/blob/master";
 
-const CONFIG_NAME: &str = "wt_custom_lang"; //DO not change unless absolutely necessary
+const CONFIG_NAME: &str = "wt_custom_lang"; //DO NOT CHANCE UNLESS ABSOLUTELY NECESSARY
+
+const TRACKED_FILES: [&str; 54] = [
+	"_common_languages.csv",
+	"menu_debriefing.csv",
+	"missions_pilots.csv",
+	"ui.csv",
+	"_keyboard.csv",
+	"menu_discount_description.csv",
+	"missions_single.csv",
+	"units.csv",
+	"_legal.csv",
+	"menu_events.csv",
+	"missions_training.csv",
+	"units_modifications.csv",
+	"_missing.csv",
+	"menu_multiplayer.csv",
+	"missions_tutorial.csv",
+	"units_weaponry.csv",
+	"_online.csv",
+	"menu_options.csv",
+	"missions_versus.csv",
+	"unlocks_achievements.csv",
+	"benchmark.csv",
+	"missions_briefing.csv",
+	// "pc_UiMessages.csv",
+	"unlocks_attachables.csv",
+	"controls.csv",
+	"missions_campaign.csv",
+	"shop.csv",
+	"unlocks_challenges.csv",
+	"encyclopedia.csv",
+	"missions_chapters.csv",
+	"speech_coral_sea.csv",
+	"unlocks_conditions.csv",
+	"encyclopedia_tips.csv",
+	"missions_debriefings.csv",
+	"speech_guadalcanal.csv",
+	"unlocks_decals.csv",
+	"localization.blk",
+	"missions_dynamic.csv",
+	"speech_honolulu.csv",
+	"unlocks_medals.csv",
+	"matching.csv",
+	"missions_fails.csv",
+	"speech_midway.csv",
+	"unlocks_skins.csv",
+	"menu.csv",
+	"missions_hints.csv",
+	"speech_tutorial.csv",
+	"unlocks_streaks.csv",
+	"menu_chat.csv",
+	"missions_locations.csv",
+	"speech_video.csv",
+	"worldwar.csv",
+	"menu_clan.csv",
+	"missions_objectives.csv",
+	"speech_wake_island.csv",
+];
 
 pub fn main() {
 	#[cfg(not(debug_assertions))]
-		{
-			std::panic::set_hook(Box::new(|panic_info| {
-				let err_notification = || {
-					// Error dropped as there is quite literally nothing that can be done at this point
-					let _ = Notification::new()
-						.summary("WT-custom-lang exited unexpectedly")
-						.body("if this issue keeps occurring please open an issue")
-						.show();
-				};
+	{
+		std::panic::set_hook(Box::new(|panic_info| {
+			let err_notification = || {
+				// Error dropped as there is quite literally nothing that can be done at this point
+				let _ = notify_rust::Notification::new().summary("WT-custom-lang exited unexpectedly").body("if this issue keeps occurring please open an issue").show();
+			};
 
-				if let Some(dir) = directories::BaseDirs::new() {
-					if let Some(data_dir) = dir.data_dir().to_str() {
-						let final_path = &format!("{}/{}/error/{}.log", data_dir, CONFIG_NAME, chrono::offset::Local::now().format("%Y-%m-%d--%H-%M-%S"));
+			if let Some(dir) = directories::BaseDirs::new() {
+				if let Some(data_dir) = dir.data_dir().to_str() {
+					let final_path = &format!("{}/{}/error/{}.log", data_dir, CONFIG_NAME, chrono::offset::Local::now().format("%Y-%m-%d--%H-%M-%S"));
 
-						let _ = fs::create_dir_all(&format!("{}/{}/error", data_dir, CONFIG_NAME));
+					let _ = fs::create_dir_all(&format!("{}/{}/error", data_dir, CONFIG_NAME));
 
-						match fs::write(final_path, panic_info.to_string()) {
-							Ok(_) => {
-								println!("Error log written to {}", final_path);
-							}
-							Err(err) => {
-								println!("Failed to save error log due to:  {}", err);
-							}
+					match fs::write(final_path, panic_info.to_string()) {
+						Ok(_) => {
+							println!("Error log written to {}", final_path);
 						}
-					} else {
-						err_notification();
+						Err(err) => {
+							println!("Failed to save error log due to:  {}", err);
+						}
 					}
 				} else {
 					err_notification();
 				}
-			}));
-		}
+			} else {
+				err_notification();
+			}
+		}));
+	}
 
 	lazy_static::initialize(&LANG_PATH);
 
@@ -63,7 +118,7 @@ pub fn main() {
 		match fs::write(&LANG_PATH.constructed_path, b"[]") {
 			Ok(_) => {}
 			Err(err) => {
-				panic!("{:?}", err);
+				panic!("{}:{} {:?}", line!(), column!(), err);
 			}
 		};
 	}
@@ -73,7 +128,7 @@ pub fn main() {
 		match fs::write(&BACKUP_ENTRY_STORAGE(), b"[]") {
 			Ok(_) => {}
 			Err(err) => {
-				panic!("{:?}", err);
+				panic!("{}:{} {:?}", line!(), column!(), err);
 			}
 		};
 	}

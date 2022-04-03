@@ -30,7 +30,7 @@ impl CustomLang {
 			}
 		});
 	}
-	pub(crate) fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
+	pub fn prompt_for_wt_path(&mut self, ctx: &CtxRef) {
 		Window::new("First time setup").anchor(Align2::CENTER_CENTER, Vec2::new(0.0,0.0)).show(ctx, |ui| {
 			ui.add(Label::new("Select WarThunder installation folder"));
 			let select_button = ui.add(Button::new(RichText::new("Choose path").text_style(TextStyle::Body)));
@@ -82,7 +82,7 @@ impl CustomLang {
 						}
 					}
 					Err(err) => {
-						self.prompt_error.err_value = Some(err.to_string());
+						self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
 						return;
 					}
 				}
@@ -111,6 +111,14 @@ impl CustomLang {
 				}
 
 				ui.add_space(20.0);
+
+
+					if let Some(path) = self.config.wt_path.as_ref() {
+						if fs::read_dir(format!("{}/lang", path)).is_ok() {
+							self.config.lang_folder_created = true;
+							return;
+						}
+					}
 
 				if ui.add(Button::new(RichText::new("Verify folder").text_style(TextStyle::Heading))).clicked() {
 					if let Some(path) = self.config.wt_path.as_ref() {
