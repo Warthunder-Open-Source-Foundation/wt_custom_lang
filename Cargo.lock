@@ -2936,7 +2936,7 @@ checksum = "dc1f211fd50f273dbd185bd9c7532b9b3c381ed0f713df14b1d06c0194c0fc1d"
 
 [[package]]
 name = "wt_custom_lang"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "chrono",
  "confy",
