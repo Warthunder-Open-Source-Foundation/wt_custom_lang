@@ -113,12 +113,23 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 												if let Ok(bytes) = res.bytes() {
 													if let Ok(file) = String::from_utf8(bytes.to_vec()) {
 														let path = format!("{}/lang/{text}", cloned_path);
-														if let Ok(mut file_handle) = File::options().truncate(true).open(&path) {
-															let _ = file_handle.write_all(file.as_bytes());
+														match fs::write(path, file)  {
+															Ok(_) => {}
+															Err(err) => {
+																panic!("Cant write {text} to file due to {err}");
+															}
 														}
+													} else {
+														panic!("Cant parse {text} to string");
 													}
+												} else {
+													panic!("{text} has no bytes");
 												}
+											} else {
+												panic!("{text} failed to request, status code was {}", res.status().as_u16());
 											}
+										} else {
+											panic!("failed to request {text}");
 										}
 									});
 									handles.push(handle);
