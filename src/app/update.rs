@@ -1,10 +1,13 @@
 use std::{fs, thread};
+use std::fs::File;
+use std::io::Write;
 
 use eframe::egui::{Button, CentralPanel, Color32, CtxRef, RichText, ScrollArea, Visuals};
 use eframe::egui::Label;
 use eframe::epi::Frame;
+use reqwest::StatusCode;
 
-use crate::CustomLang;
+use crate::{CustomLang, TRACKED_FILES};
 use crate::app::custom_lang::{render_footer, STORE_CONF};
 use crate::lang_manipulation::primitive_lang::PrimitiveEntry;
 use crate::local_storage::entries::{READ_PRIMITIVE, WRITE_PRIMITIVE};
@@ -100,24 +103,27 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 						if ui.add(Button::new("Re-apply all lang changes")).clicked() {
 							static SOURCE_URL: &str = "https://raw.githubusercontent.com/Warthunder-Open-Source-Foundation/wt_datamine_extractor/master/lang/";
 
-							static TRACKED_FILES: [&str; 4] = ["units.csv", "ui.csv", "_common_languages.csv", "menu.csv"];
-
 							if let Some(wt_path) =  custom_lang.config.wt_path.clone() {
 								let mut handles = vec![];
 								for text in TRACKED_FILES {
 									let cloned_path = wt_path.clone();
 									let handle = thread::spawn(move || {
 										if let Ok(res) = reqwest::blocking::get(format!("{SOURCE_URL}{}", text.clone())) {
-											if let Ok(bytes) = res.bytes() {
-												if let Ok(file) = String::from_utf8(bytes.to_vec()) {
-													let path = format!("{}/lang/{text}", cloned_path);
-													let _ = fs::write(&path, file);
+											if res.status() == StatusCode::OK {
+												if let Ok(bytes) = res.bytes() {
+													if let Ok(file) = String::from_utf8(bytes.to_vec()) {
+														let path = format!("{}/lang/{text}", cloned_path);
+														if let Ok(mut file_handle) = File::options().truncate(true).open(&path) {
+															let _ = file_handle.write_all(file.as_bytes());
+														}
+													}
 												}
 											}
 										}
 									});
 									handles.push(handle);
 								}
+
 								for handle in handles {
 									if handle.join().is_err() {
 										custom_lang.prompt_error.err_value = Some("A thread failed to download and write new custom files".to_owned());
