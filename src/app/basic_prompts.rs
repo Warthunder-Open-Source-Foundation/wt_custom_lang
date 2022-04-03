@@ -82,7 +82,7 @@ impl CustomLang {
 						}
 					}
 					Err(err) => {
-						self.prompt_error.err_value = Some(err.to_string());
+						self.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
 						return;
 					}
 				}

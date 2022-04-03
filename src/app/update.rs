@@ -19,7 +19,7 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 		ctx.set_visuals(Visuals::light());
 	}
 	if custom_lang.prompt_error.err_value.is_some() {
-		custom_lang.prompt_error(ctx);
+		custom_lang.prompt_error(ctx, frame);
 	} else {
 		match () {
 			_ if custom_lang.config.wt_path.is_none() => {
@@ -88,7 +88,7 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 										}
 									}
 									Err(err) => {
-										custom_lang.prompt_error.err_value = Some(format!("{}", err).to_owned());
+										custom_lang.prompt_error.err_value = Some(format!("{:?} {}:{} {}", err, line!(), column!(), file!()));
 										return;
 									}
 								}
