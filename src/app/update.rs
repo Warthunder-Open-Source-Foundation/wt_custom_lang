@@ -170,13 +170,22 @@ pub fn update(custom_lang: &mut CustomLang, ctx: &CtxRef, frame: &Frame) {
 				let prim_array = READ_PRIMITIVE();
 
 				for (i, primitive_entry) in prim_array.iter().enumerate() {
-					ui.horizontal(|ui| {
-						ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))));
+					let soft_wrap = primitive_entry.new_english.len() > 20;
+					let mut undo_button = |ui: &mut eframe::egui::Ui|{
 						if ui.add(Button::new(RichText::new("Undo").color(Color32::from_rgb(255, 0, 0)))).clicked() {
 							custom_lang.undo_entry(i, primitive_entry);
 							STORE_CONF(&custom_lang.config);
 						}
+					};
+					ui.horizontal(|ui| {
+						ui.add(Label::new(RichText::new(format!("{} changed to {}", primitive_entry.original_english, primitive_entry.new_english))).wrap(soft_wrap));
+						if !soft_wrap {
+							undo_button(ui);
+						}
 					});
+					if soft_wrap {
+						undo_button(ui);
+					}
 				}
 			});
 			render_footer(ctx);
