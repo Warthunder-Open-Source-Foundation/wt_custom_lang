@@ -1,5 +1,5 @@
 #!/bin/zsh
-echo "Loging into GH"
+echo "Login into GH"
 gh auth login --with-token < token.txt
 
 echo "Cloning..."
