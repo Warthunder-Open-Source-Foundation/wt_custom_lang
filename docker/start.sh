@@ -1,5 +1,5 @@
 #!/bin/zsh
-echo "Loging into GH"
+echo "Login into GH"
 gh auth login --with-token < token.txt
 
 echo "Cloning..."
@@ -15,10 +15,10 @@ echo "Pre-fetching cargo crates"
 cargo fetch
 
 echo "Building linux target"
-cargo build -j 10 --release --target x86_64-unknown-linux-gnu # The -j flag can be removed to use 100% of the available threads
+cargo build -j 22 --release --target x86_64-unknown-linux-gnu # The -j flag can be removed to use 100% of the available threads
 
 echo "Building"
-cargo build -j 10 --release --target x86_64-pc-windows-gnu
+cargo build -j 22 --release --target x86_64-pc-windows-gnu
 
 # The steps below are only required for publishing to github
 
